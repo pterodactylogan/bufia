@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <list>
 #include <memory>
+#include "factor.h"
 
 using ::std::string;
 using ::std::vector;
@@ -54,58 +55,57 @@ int main(int argc, char **argv) {
 	}
 	symbol_order.push_back(symbols);
 
-	// go through rest of lines, fill in vector of vectors
-	// populate map feature_name -> value -> characters
-	vector<std::unique_ptr<list<char>>> feature_bundles(symbol_order.size());
-	unordered_map<string, 
-		pair<unordered_set<string>, unordered_set<string>>> feature_to_symbols;
+	// find number of features
+	int num_features = -1;
+	std::ifstream feature_file_cp (feature_filename);
+	if(!feature_file_cp.is_open()) {
+		std::cout << "failed to open feature file";
+		return 1;
+	}
+	std::string ln;
+	while(std::getline(feature_file_cp, ln)) {
+		++num_features;
+	}
+
+	// go through rest of lines, fill in map of symbols to Factors
+	unordered_map<string, Factor> alphabet;
 	string values;
+	int feature_i = 0;
 	while (std::getline(feature_file, values)) {
 		size_t pos = values.find(",");
 		string feature_name = values.substr(0, pos);
 		values.erase(0, pos+1);
-
-		unordered_set<string> plus;
-		unordered_set<string> minus;
-		feature_to_symbols[feature_name] = std::make_pair(plus, minus);
 
 		pos = values.find(",");
 		int i = 0;
 		string value;
 		while (i<symbol_order.size()) {
 			value = values.substr(0, pos);
-			if(value == "+"){
-				feature_to_symbols[feature_name].first.insert(symbol_order.at(i));
-			} else if(value == "-"){
-				feature_to_symbols[feature_name].second.insert(symbol_order.at(i));
-			} else if(value != "0"){
+			if(value != "0" && value!="+" && value !="-"){
 				std::cout << "Invalid value symbol: " + value + ". This may cause"
 				" unexpected behavior";
 			}
 
-			if(feature_bundles.at(i) == nullptr){
-				feature_bundles[i] = std::unique_ptr<list<char>>(new list<char>());
+			if (alphabet.find(symbol_order[i]) == alphabet.end()) {
+				vector<vector<char>*> bundles(1, new vector<char>(num_features));
+				Factor fac = Factor(bundles);
+				alphabet[symbol_order[i]] = fac;
 			}
-			feature_bundles.at(i)->push_back(value[0]);
+			(*alphabet[symbol_order[i]].bundles.at(0))[feature_i] = value[0];
 
 			values.erase(0, pos+1);
 			pos = values.find(",");
 			++i;
 		}
+		++feature_i;
 	}
 
-	std::cout << feature_to_symbols["cons"].first.size();
+	std::cout << alphabet.size();
 	std::cout << "\n";
-	std::cout << feature_to_symbols["cons"].second.size();
+	std::cout << alphabet["i"].bundles.at(0)->size();
 	std::cout << "\n";
-
-	for(int i=0; i<feature_bundles.size(); i++){
-		for(const auto& item : *feature_bundles.at(i)) {
-			std::cout << item;
-			std::cout << ",";
-		}
-		std::cout << "\n";
-	}
+	std::cout << alphabet["b"].bundles.at(0)->at(2);
+	std::cout << "\n";
 
 	// convert vector of vectors to map of char -> factor
 
