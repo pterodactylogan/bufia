@@ -3,12 +3,15 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <list>
+#include <memory>
 
 using ::std::string;
 using ::std::vector;
 using ::std::unordered_map;
 using ::std::unordered_set;
 using ::std::pair;
+using ::std::list;
 
 int main(int argc, char **argv) {
 	// load feature file from flag
@@ -53,7 +56,7 @@ int main(int argc, char **argv) {
 
 	// go through rest of lines, fill in vector of vectors
 	// populate map feature_name -> value -> characters
-	//vector<vector<char>*> feature_bundles(symbol_order.size());
+	vector<std::unique_ptr<list<char>>> feature_bundles(symbol_order.size());
 	unordered_map<string, 
 		pair<unordered_set<string>, unordered_set<string>>> feature_to_symbols;
 	string values;
@@ -80,10 +83,28 @@ int main(int argc, char **argv) {
 				" unexpected behavior";
 			}
 
+			if(feature_bundles.at(i) == nullptr){
+				feature_bundles[i] = std::unique_ptr<list<char>>(new list<char>());
+			}
+			feature_bundles.at(i)->push_back(value[0]);
+
 			values.erase(0, pos+1);
 			pos = values.find(",");
 			++i;
 		}
+	}
+
+	std::cout << feature_to_symbols["cons"].first.size();
+	std::cout << "\n";
+	std::cout << feature_to_symbols["cons"].second.size();
+	std::cout << "\n";
+
+	for(int i=0; i<feature_bundles.size(); i++){
+		for(const auto& item : *feature_bundles.at(i)) {
+			std::cout << item;
+			std::cout << ",";
+		}
+		std::cout << "\n";
 	}
 
 	// convert vector of vectors to map of char -> factor
