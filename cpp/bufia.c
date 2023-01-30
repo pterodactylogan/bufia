@@ -17,6 +17,7 @@ using ::std::list;
 int main(int argc, char **argv) {
 	// load feature file from flag
 	string feature_filename = argv[1];
+	string data_filename = argv[2];
 	std::ifstream feature_file (feature_filename);
 
 	if(!feature_file.is_open()) {
@@ -87,11 +88,9 @@ int main(int argc, char **argv) {
 			}
 
 			if (alphabet.find(symbol_order[i]) == alphabet.end()) {
-				vector<vector<char>*> bundles(1, new vector<char>(num_features));
-				Factor fac = Factor(bundles);
-				alphabet[symbol_order[i]] = fac;
+				alphabet[symbol_order[i]] = Factor(1, num_features);
 			}
-			(*alphabet[symbol_order[i]].bundles.at(0))[feature_i] = value[0];
+			alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
 
 			values.erase(0, pos+1);
 			pos = values.find(",");
@@ -102,9 +101,9 @@ int main(int argc, char **argv) {
 
 	std::cout << alphabet.size();
 	std::cout << "\n";
-	std::cout << alphabet["i"].bundles.at(0)->size();
+	std::cout << alphabet["i"].bundles.at(0).size();
 	std::cout << "\n";
-	std::cout << alphabet["b"].bundles.at(0)->at(2);
+	std::cout << alphabet["b"].bundles.at(0).at(2);
 	std::cout << "\n";
 
 	// convert vector of vectors to map of char -> factor
