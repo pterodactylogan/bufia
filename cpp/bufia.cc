@@ -6,6 +6,7 @@
 #include <list>
 #include <memory>
 #include "factor.h"
+//#include "bufia_init_utils.h"
 
 using ::std::string;
 using ::std::vector;
@@ -15,15 +16,28 @@ using ::std::pair;
 using ::std::list;
 
 int main(int argc, char **argv) {
-	// load feature file from flag
+	// load files from input flags
+	if(argc < 2) {
+		std::cout << "Expected at least two arguments: feature file and data file";
+		return 1;
+	}
+
 	string feature_filename = argv[1];
 	string data_filename = argv[2];
 	std::ifstream feature_file (feature_filename);
+	std::ifstream data_file (data_filename);
 
 	if(!feature_file.is_open()) {
 		std::cout << "Failed to open feature file";
 		return 1;
 	}
+	if(!data_file.is_open()) {
+		std::cout << "Failed to open data file";
+		return 1;
+	}
+
+	//unordered_map<string, Factor> map = LoadAlphabetFeatures(&feature_file);
+	//std::cout << map.size() << std::endl;
 
 	// Look at first line of feature file
 	string symbols;
@@ -105,8 +119,6 @@ int main(int argc, char **argv) {
 	std::cout << "\n";
 	std::cout << alphabet["b"].bundles.at(0).at(2);
 	std::cout << "\n";
-
-	// convert vector of vectors to map of char -> factor
 
 	return 0;
 }

@@ -1,0 +1,5 @@
+CC = g++
+
+bufia:
+	$(CC) bufia bufia.cc
+
