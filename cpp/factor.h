@@ -18,6 +18,15 @@ public:
 	}
 
 	Factor(){}
+
+	void SetIsEdge(bool new_value) {
+		if(new_value) {
+			bundles.clear();
+		}
+		is_edge = new_value;
+	}
+private:
+	bool is_edge = false;
 };
 
 #endif /* FACTOR_H */

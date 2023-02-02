@@ -1,5 +1,8 @@
 CC = g++
 
 bufia:
-	$(CC) bufia bufia.cc
+	$(CC) -o bufia bufia_init_utils.cc bufia.cc
+
+clean:
+	rm *.o bufia
 
