@@ -4,7 +4,7 @@
 #include <fstream>
 #include <set>
 #include <unordered_map>
-#include <bits/stdc++.h>
+#include <sstream>
 #include "factor.h"
 
 using ::std::string;
@@ -115,7 +115,8 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 	vector<string> prev;
 	while(std::getline(*data_file, word)){
 		word = "# " + word + " #";
-		std::stringstream word_stream(word);
+		std::stringstream word_stream;
+		word_stream << word;
 		string symbol;
 		while (std::getline(word_stream, symbol, ' ')){
 			prev.push_back(symbol);
