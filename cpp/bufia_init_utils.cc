@@ -2,10 +2,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <unordered_map>
+#include <bits/stdc++.h>
 #include "factor.h"
 
 using ::std::string;
+using ::std::set;
 using ::std::unordered_map;
 
 unordered_map<string, Factor> 
@@ -28,8 +31,8 @@ LoadAlphabetFeatures(std::ifstream* feature_file){
 	size_t pos = symbols.find(",");
 	string symbol;
 	vector<string> symbol_order;
+
 	// push each new symbol into symbol_order vector
-	// TODO: refactor into function
 	while (pos != string::npos) {
 		symbol = symbols.substr(0, pos);
 		
@@ -85,8 +88,45 @@ LoadAlphabetFeatures(std::ifstream* feature_file){
 	return alphabet;
 }
 
-unordered_map<int, vector<Factor>> 
-LoadPositiveData(std::ifstream* data_file, int max_width){
-	unordered_map<int, vector<Factor>> map;
-	return map;
+// Creates a factor for the ngram represented by `symbols` vector
+// If `begin_index` is set, only that index onward will be used in the ngram
+Factor MakeFactor(const vector<string>& symbols,
+	const unordered_map<string, Factor>& alphabet, int begin_index=0) {
+	vector<vector<char>> bundles;
+	for(int i=begin_index; i<symbols.size(); i++) {
+		if(symbols.at(i)=="#"){
+			// Vector of same length populated only with '#' for edge marker
+			bundles.push_back(vector<char>(alphabet.begin()->second.bundles.at(0).size(), '#'));
+		} else {
+			bundles.push_back(vector<char>(alphabet.at(symbols.at(i)).bundles[0]));
+		}
+	}
+	Factor ret(bundles);
+	return ret;
+}
+
+unordered_map<int, set<Factor>> 
+LoadPositiveData(std::ifstream* data_file, int max_width, 
+	const unordered_map<string, Factor>& alphabet){
+
+	unordered_map<int, set<Factor>> data;
+
+	string word;
+	vector<string> prev;
+	while(std::getline(*data_file, word)){
+		word = "# " + word + " #";
+		std::stringstream word_stream(word);
+		string symbol;
+		while (std::getline(word_stream, symbol, ' ')){
+			prev.push_back(symbol);
+			for(int width = 1; width<=max_width; width++){
+				if(prev.size() >= width) {
+					data[width].insert(MakeFactor(prev, alphabet, prev.size()-width));
+				}
+			}
+		}
+		prev.clear();
+	}
+
+	return data;
 }

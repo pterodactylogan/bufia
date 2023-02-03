@@ -37,18 +37,12 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	// symbol -> width-1 Factor
 	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file);
 
-	// factor width -> vector of factors
-	unordered_map<int, vector<Factor>> positive_data = 
-		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH);
-
-	std::cout << alphabet.size();
-	std::cout << "\n";
-	std::cout << alphabet["i"].bundles.at(0).size();
-	std::cout << "\n";
-	std::cout << alphabet["b"].bundles.at(0).at(2);
-	std::cout << "\n";
+	// factor width -> set of factors
+	unordered_map<int, std::set<Factor>> positive_data = 
+		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet);
 
 	return 0;
 }
