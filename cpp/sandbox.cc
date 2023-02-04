@@ -2,6 +2,7 @@
 #include <list>
 #include <memory>
 #include <set>
+#include <omp.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -13,12 +14,37 @@ using ::std::vector;
 
 // THIS FILE IS FOR DEVELOPMENT ONLY
 // NOT A PROPERLY SET UP TEST SUITE
+void TestGenerates() {		
+	vector<vector<char>> vec = {{'*', '+', '+', '*', '-'}, {'*', '+', '*', '-', '*'}};
+	Factor fac(vec);
+
+	vec = {{'*', '+', '+', '*', '-'}, {'+', '+', '0', '-', '*'}};
+	Factor child(vec);
+
+	vec = {{'*', '*', '+', '*', '-'}, {'*', '+', '*', '-', '*'}};
+	Factor non_child1(vec);
+
+	vec = {{'*', '+', '+', '*', '-'}, {'*', '-', '*', '-', '*'}};
+	Factor non_child2(vec);
+
+	vec = {{'*', '+', '+', '*', '-'}};
+	Factor fac2(vec);
+
+	vec = {{'#', '#', '#', '#', '#'}};
+	Factor edge(vec);
+
+	std::cout << fac.generates(child) << std::endl; // exp T
+	std::cout << fac.generates(non_child1) << std::endl; // exp F
+	std::cout << fac.generates(non_child2) << std::endl; // exp F
+	std::cout << fac2.generates(edge) << std::endl; // exp F
+}
 
 void TestNextFactors() {	
 	vector<vector<char>> vec = {{'*', '+', '+', '*', '-'}, {'*', '+', '*', '-', '*'}};
 	Factor fac(vec);
 
 	std::unordered_map<std::string, Factor> map;
+	map["a"] = Factor({{'+', '+', '-', '-', '-'}});
 	list<Factor> li = fac.getNextFactors(map, 3, 3);
 	std::cout << li.size() << std::endl;
 	for(const auto& item : li){
@@ -46,4 +72,5 @@ void TestCompare() {
 
 int main(int argc, char **argv) {
 	TestNextFactors();
+	//TestGenerates();
 }

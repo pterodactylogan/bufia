@@ -11,10 +11,11 @@ using ::std::unordered_map;
 using ::std::vector;
 
 bool Factor::operator < (const Factor& other) const {
-	if(other.bundles.size() != bundles.size()) return false;
+	if(other.bundles.size() > bundles.size()) return true;
+	if(other.bundles.size() < bundles.size()) return false;
 	for(int i=0; i<bundles.size(); i++) {
 		for(int j=0; j<bundles.at(i).size(); j++) {
-			if(other.bundles.at(i).size() != bundles.at(i).size()) return false;
+			if(other.bundles.at(i).size() > bundles.at(i).size()) return true;
 			char s = bundles[i][j];
 			char o = other.bundles[i][j];
 
@@ -40,10 +41,12 @@ bool Factor::operator < (const Factor& other) const {
 }
 
 bool Factor::operator > (const Factor& other) const {	
-	if(other.bundles.size() != bundles.size()) return false;
+	if(other.bundles.size() < bundles.size()) return true;	
+	if(other.bundles.size() > bundles.size()) return false;
 	for(int i=0; i<bundles.size(); i++) {
 		for(int j=0; j<bundles.at(i).size(); j++) {
-			if(other.bundles.at(i).size() != bundles.at(i).size()) return false;
+			if(other.bundles.at(i).size() < bundles.at(i).size()) return true;
+			if(other.bundles.at(i).size() > bundles.at(i).size()) return false;
 			char s = bundles[i][j];
 			char o = other.bundles[i][j];
 
@@ -80,6 +83,21 @@ std::string Factor::toString() const {
 	return result;
 }
 
+bool Factor::generates(const Factor& child) const {
+	if(bundles.size() == 0) return false;
+	if(bundles.size() != child.bundles.size()) return false;
+	if(bundles.at(0).size() != child.bundles.at(0).size()) return false;
+
+	for(int i=0; i<bundles.size(); i++){
+		for(int j=0; j<bundles.at(0).size(); j++){
+			if(bundles[i][j] == '#' || child.bundles[i][j] == '#') return false;
+			if(bundles[i][j] == '*') continue;
+			if(bundles[i][j] != child.bundles[i][j]) return false;
+		}
+	}
+	return true;
+}
+
 list<Factor> Factor::getNextFactors(
 	const unordered_map<std::string, Factor>& alphabet, 
 	int max_width, int max_features) const {
@@ -98,19 +116,29 @@ list<Factor> Factor::getNextFactors(
 		--i;
 	}
 
-	std::cout<<num_features<<std::endl;
-
 	if(num_features < max_features) {
 		for(unset_index; unset_index<bundles[last].size(); unset_index++){
 			vector<vector<char>> next_pos = bundles;
 			next_pos[last][unset_index] = '+';
-			// check if this generates anything in alphabet
-			result.push_back(Factor(next_pos));
+
+			// check if last bundle generates anything in alphabet
+			Factor final({next_pos[last]});
+			for(const auto& pair : alphabet){
+				if(final.generates(pair.second)){
+					result.push_back(Factor(next_pos));
+					break;
+				}
+			}
 
 			vector<vector<char>> next_neg = bundles;
 			next_neg[last][unset_index] = '-';
-			// ditto
-			result.push_back(Factor(next_neg));
+			final = Factor({next_neg[last]});
+			for(const auto& pair : alphabet){
+				if(final.generates(pair.second)){
+					result.push_back(Factor(next_neg));
+					break;
+				}
+			}
 		}
 	}
 

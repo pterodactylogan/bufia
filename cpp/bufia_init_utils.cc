@@ -5,14 +5,18 @@
 #include <set>
 #include <unordered_map>
 #include <sstream>
+#include <vector>
+
 #include "factor.h"
 
 using ::std::string;
 using ::std::set;
 using ::std::unordered_map;
+using ::std::vector;
 
 unordered_map<string, Factor> 
-LoadAlphabetFeatures(std::ifstream* feature_file){
+LoadAlphabetFeatures(std::ifstream* feature_file, 
+	vector<string>& feature_order){
 
 	// find number of features
 	int num_features = -1;
@@ -62,6 +66,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file){
 	while (std::getline(*feature_file, values)) {
 		size_t pos = values.find(",");
 		string feature_name = values.substr(0, pos);
+		feature_order.push_back(feature_name);
 		values.erase(0, pos+1);
 
 		pos = values.find(",");
@@ -105,7 +110,7 @@ Factor MakeFactor(const vector<string>& symbols,
 	return ret;
 }
 
-unordered_map<int, set<Factor>> 
+unordered_map<int, vector<Factor>> 
 LoadPositiveData(std::ifstream* data_file, int max_width, 
 	const unordered_map<string, Factor>& alphabet){
 
@@ -129,5 +134,9 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 		prev.clear();
 	}
 
-	return data;
+	unordered_map<int, vector<Factor>> result;
+	for(const auto& pair : data){
+		result[pair.first] = vector<Factor>(pair.second.begin(), pair.second.end());
+	}	
+	return result;
 }
