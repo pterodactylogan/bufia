@@ -1,8 +1,11 @@
 CC = g++
 
 bufia:
-	$(CC) -o bufia bufia_init_utils.cc bufia.cc
+	$(CC) -o bufia bufia_init_utils.cc factor.cc bufia.cc
+
+sandbox:
+	$(CC) -o sandbox factor.cc sandbox.cc
 
 clean:
-	rm *.o bufia
+	rm *.o bufia sandbox
 

@@ -1,9 +1,13 @@
 #ifndef FACTOR_H
 #define FACTOR_H
 
+#include <list>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 using ::std::vector;
+using ::std::list;
 
 class Factor {
 public:
@@ -19,70 +23,17 @@ public:
 
 	Factor(){}
 
-	// Comparison: + > - > 0 > # ; * > #
-	bool operator < (const Factor& other) const {
-		if(other.bundles.size() != bundles.size()) return false;
-		for(int i=0; i<bundles.size(); i++) {
-			for(int j=0; j<bundles.at(i).size(); j++) {
-				if(other.bundles.at(i).size() != bundles.at(i).size()) return false;
+	// Comparison: + > - > 0 > * > #
+	bool operator < (const Factor& other) const;
 
-				if(other.bundles[i][j] == '#' && bundles[i][j]!='#') return false;
+	bool operator > (const Factor& other) const;
 
-				if(other.bundles[i][j] == '+' && 
-					(bundles[i][j] == '-' || bundles[i][j] == '0'
-						|| bundles[i][j] == '#')) return true;
+	list<Factor> getNextFactors(
+		const std::unordered_map<std::string, Factor>& alphabet, 
+		int max_width, int max_features) const;
 
-				if(other.bundles[i][j] == '-'){
-					if(bundles[i][j] == '0' || bundles[i][j] == '#') return true;
-					if(bundles[i][j] == '+') return false;
-				}
-
-				if(other.bundles[i][j] == '0'){
-					if(bundles[i][j] == '#') return true;
-					if(bundles[i][j] == '+' || bundles[i][j] == '-') return false;
-				}
-			}
-		}
-		return false;
-	}
-
-	bool operator > (const Factor& other) const {
-		if(other.bundles.size() != bundles.size()) return false;
-		for(int i=0; i<bundles.size(); i++) {
-			for(int j=0; j<bundles.at(i).size(); j++) {
-				if(other.bundles.at(i).size() != bundles.at(i).size()) return false;
-
-				if(other.bundles[i][j] == '#' && bundles[i][j]!='#') return true;
-
-				if(other.bundles[i][j] == '0') {
-					if(bundles[i][j] == '-' || bundles[i][j] == '+') return true;
-					if(bundles[i][j] == '#') return false;
-				}
-
-				if(other.bundles[i][j] == '-') {
-					if(bundles[i][j] == '+') return true;
-					if(bundles[i][j] == '0' || bundles[i][j] == '#') return false;
-				}
-
-				if(other.bundles[i][j] == '+' && 
-					(bundles[i][j] == '-' || bundles[i][j] == '0'
-						|| bundles[i][j] == '#')) return false;
-			}
-		}
-		return false;
-	}
-
-	std::string print_string() const {
-		std::string result = "";
-		for(const auto& bundle : bundles){
-			result += "[";
-			for(const auto& value : bundle) {
-				result+= std::string(1, value) + ", ";
-			}
-			result +="]\n";
-		}
-		return result;
-	}
+	// Returns a string displaying Factor contents. For debugging.
+	std::string toString() const;
 };
 
 #endif /* FACTOR_H */

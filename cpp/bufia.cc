@@ -17,6 +17,8 @@ using ::std::list;
 
 int main(int argc, char **argv) {
 	int MAX_FACTOR_WIDTH = 2;
+	int MAX_FEATURES_PER_BUNDLE = 3;
+	
 	// load files from input flags
 	if(argc < 2) {
 		std::cout << "Expected at least two arguments: feature file and data file";
