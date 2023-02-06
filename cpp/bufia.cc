@@ -54,43 +54,28 @@ int main(int argc, char **argv) {
 	list<Factor> queue = {Factor(vector<vector<char>>(1, 
 		vector<char>(feature_order.size(), '*')))};
 	vector<Factor> constraints;
-	set<Factor> visited;
 
 	while(!queue.empty()) {
 		Factor current = queue.front();
 		queue.pop_front();
-		if(Contains(constraints, current)) continue;
-		//visited.insert(current);
-
-		std::cout << "current: "<< current.toString() << std::endl;
+		if(Covers(constraints, current)) continue;
 
 		if(Contains(positive_data[current.bundles.size()], current)) {
-			std::cout << "found" << std::endl;
 			list<Factor> next_factors = current.getNextFactors(alphabet, 
 				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
 			next_factors.remove_if([visited, constraints, current](Factor fac){
-				return //visited.find(fac) != visited.end() || 
-				Contains(constraints, fac);
+				return Contains(constraints, fac);
 			});
 
-			std::cout<< "adding " << next_factors.size() << " new factors" << std::endl;
 			queue.splice(queue.end(), next_factors);
-			//std::cout << "new queue size: " << queue.size() << std::endl;
 		} else {
-			std::cout<< "not found, adding constraint" << std::endl;
 			constraints.push_back(current);
 		}
 	}
 
-	std::cout << constraints.size() << ": size" << std::endl;
 	for(Factor const& constraint : constraints){
 		std::cout << constraint.toString() << std::endl;
 	}
-
-	// Factor fac(vector<vector<char>>(
-	// 	{{'*', '*', '*', '+', '*', '*', '*', '*'}, {'*', '*', '*', '+', '*', '*', '*', '*'}}));
-	// std::cout << positive_data[1].size() << std::endl;
-	// std::cout << Contains(positive_data[2], fac) << std::endl;
 
 	return 0;
 }

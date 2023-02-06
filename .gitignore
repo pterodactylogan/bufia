@@ -6,3 +6,7 @@
 cabal.sandbox.config
 dist
 dist-newstyle
+bufia
+*.out
+*sandbox
+*test*

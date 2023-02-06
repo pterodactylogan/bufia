@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "factor.h"
+#include "bufia_algorithm_utils.h"
 
 using ::std::list;
 using ::std::vector;
@@ -37,6 +38,13 @@ void TestGenerates() {
 	std::cout << fac.generates(non_child1) << std::endl; // exp F
 	std::cout << fac.generates(non_child2) << std::endl; // exp F
 	std::cout << fac2.generates(edge) << std::endl; // exp F
+
+	Factor cons1({{'#', '#'}, {'*', '*'}});
+	Factor cons2({{'*', '*'}, {'#', '#'}});
+
+	Factor sm_child({{'#', '#'}, {'+', '*'}});
+
+	std::cout << cons1.generates(sm_child) << std::endl; // exp T
 }
 
 void TestNextFactors() {	
@@ -70,7 +78,17 @@ void TestCompare() {
 	std::cout << (child_1 < child_2) << std::endl; // exp: F
 }
 
+void TestCovers() {
+	Factor cons1({{'#', '#'}, {'*', '*'}});
+	Factor cons2({{'*', '*'}, {'#', '#'}});
+
+	Factor child({{'#', '#'}, {'+', '*'}});
+
+	std::cout << Covers({cons1, cons2}, child); // exp T
+}
+
 int main(int argc, char **argv) {
-	TestNextFactors();
-	//TestGenerates();
+	//TestNextFactors();
+	TestGenerates();
+	//TestCovers();
 }

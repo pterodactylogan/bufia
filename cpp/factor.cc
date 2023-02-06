@@ -90,7 +90,6 @@ bool Factor::generates(const Factor& child) const {
 
 	for(int i=0; i<bundles.size(); i++){
 		for(int j=0; j<bundles.at(0).size(); j++){
-			if(bundles[i][j] == '#' || child.bundles[i][j] == '#') return false;
 			if(bundles[i][j] == '*') continue;
 			if(bundles[i][j] != child.bundles[i][j]) return false;
 		}
