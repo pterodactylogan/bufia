@@ -12,6 +12,7 @@
 
 using ::std::list;
 using ::std::vector;
+using ::std::string;
 
 // THIS FILE IS FOR DEVELOPMENT ONLY
 // NOT A PROPERLY SET UP TEST SUITE
@@ -87,8 +88,27 @@ void TestCovers() {
 	std::cout << Covers({cons1, cons2}, child); // exp T
 }
 
+void TestComputeGeneratedNGrams() {
+	std::unordered_map<std::string, Factor> alphabet({
+		{"a", Factor({{'+', '+'}})},
+		{"b", Factor({{'+', '-'}})},
+		{"c", Factor({{'-', '-'}})}
+	});
+
+	Factor fac({{'*', '-'}, {'+', '*'}, {'*', '*'}});
+
+	vector<string> ngrams = ComputeGeneratedNGrams(fac, alphabet);
+	std::cout << ngrams.size() << std::endl; // exp 12
+
+	for(const auto& ngram : ngrams){
+		std::cout << ngram << ", ";
+	}
+	std::cout << std::endl;
+}
+
 int main(int argc, char **argv) {
 	//TestNextFactors();
-	TestGenerates();
+	//TestGenerates();
 	//TestCovers();
+	TestComputeGeneratedNGrams();
 }

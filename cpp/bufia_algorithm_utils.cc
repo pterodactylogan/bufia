@@ -57,3 +57,30 @@ string Display(const Factor& fac, const vector<string>& feature_order) {
 	}
 	return result;
 }
+
+vector<string> ComputeGeneratedNGrams(const Factor& fac,
+	const std::unordered_map<std::string, Factor>& alphabet) {
+	if(fac.bundles.size() == 0) return {""};
+
+	vector<string> tails = ComputeGeneratedNGrams(
+		Factor(vector<vector<char>>(fac.bundles.begin()+1, 
+			fac.bundles.end())), alphabet);
+	vector<string> result;
+	Factor first({fac.bundles.at(0)});
+
+	if(first.bundles.at(0).at(0) == '#'){
+		for(const auto& tail : tails) {
+			result.push_back("#" + tail);
+		}
+		return result;
+	}
+
+	for(const auto& pair : alphabet) {
+		if(first.generates(pair.second)){
+			for(const auto& tail : tails){
+				result.push_back(pair.first + tail);
+			}
+		}
+	}
+	return result;
+}

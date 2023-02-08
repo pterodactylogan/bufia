@@ -20,8 +20,9 @@ using ::std::list;
 using ::std::set;
 
 int main(int argc, char **argv) {
-	int MAX_FACTOR_WIDTH = 2;
-	int MAX_FEATURES_PER_BUNDLE = 3;
+	const int MAX_FACTOR_WIDTH = 2;
+	const int MAX_FEATURES_PER_BUNDLE = 3;
+	const int ABDUCTIVE_PRINCIPLE = 1;
 
 	// load files from input flags
 	if(argc < 2) {
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
 	list<Factor> queue = {Factor(vector<vector<char>>(1, 
 		vector<char>(feature_order.size(), '*')))};
 	vector<Factor> constraints;
+	set<string> banned_ngrams;
 
 	while(!queue.empty()) {
 		Factor current = queue.front();
@@ -63,13 +65,28 @@ int main(int argc, char **argv) {
 		if(Contains(positive_data[current.bundles.size()], current)) {
 			list<Factor> next_factors = current.getNextFactors(alphabet, 
 				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
-			next_factors.remove_if([visited, constraints, current](Factor fac){
+			next_factors.remove_if([constraints](Factor fac){
 				return Contains(constraints, fac);
 			});
 
 			queue.splice(queue.end(), next_factors);
 		} else {
-			constraints.push_back(current);
+			if(ABDUCTIVE_PRINCIPLE == 0) {
+				constraints.push_back(current);
+				continue;
+			}
+
+			// if Abductive principle = 1, check whether constraint extends the grammar
+			bool redundant = true;
+			vector<string> ngrams = ComputeGeneratedNGrams(current, alphabet);
+			for(const auto& ngram : ngrams){
+				if(banned_ngrams.insert(ngram).second == true) {
+					redundant = false;
+				}
+			}
+			if(!redundant) {
+				constraints.push_back(current);
+			}
 		}
 	}
 
