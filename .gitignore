@@ -10,3 +10,5 @@ bufia
 *.out
 *sandbox
 *test*
+*.dyn_hi
+*.dyn_o

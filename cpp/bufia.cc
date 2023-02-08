@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 	}
 
 	for(Factor const& constraint : constraints){
-		std::cout << constraint.toString() << std::endl;
+		std::cout << Display(constraint, feature_order) << std::endl;
 	}
 
 	return 0;
