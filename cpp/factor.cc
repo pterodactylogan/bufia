@@ -84,23 +84,56 @@ std::string Factor::toString() const {
 }
 
 bool Factor::generates(const Factor& child) const {
-	if(bundles.size() == 0) return false;
-	if(bundles.size() != child.bundles.size()) return false;
+	if(bundles.size() == 0 || child.bundles.size() == 0) return false;
+	if(bundles.size() > child.bundles.size()) return false;
 	if(bundles.at(0).size() != child.bundles.at(0).size()) return false;
 
-	for(int i=0; i<bundles.size(); i++){
-		for(int j=0; j<bundles.at(0).size(); j++){
-			if(bundles[i][j] == '*') continue;
-			if(bundles[i][j] != child.bundles[i][j]) return false;
+	// If same size or this starts with #, anchor left
+	if(bundles.size() == child.bundles.size() || bundles[0][0] == '#'){
+		for(int i=0; i<bundles.size(); i++){
+			for(int j=0; j<bundles.at(0).size(); j++){
+				if(bundles[i][j] == '*') continue;
+				if(bundles[i][j] != child.bundles[i][j]) return false;
+			}
 		}
+		return true;
 	}
-	return true;
+
+	// If this ends with #, anchor right
+	if(bundles[bundles.size()-1][0] == '#'){
+		for(int i=1; i<=bundles.size(); i++){	
+			for(int j=0; j<bundles.at(0).size(); j++){
+				if(bundles[bundles.size()-i][j] == '*') continue;
+				if(bundles[bundles.size()-i][j] != 
+					child.bundles[child.bundles.size()-i][j]) return false;
+			}
+		}
+		return true;
+	}
+
+	// Otherwise, check all k-size substrings
+	for(int offset = 0; offset <= child.bundles.size() - bundles.size(); 
+		offset++) {
+		bool found_mismatch = false;
+		for(int i=0; i<bundles.size(); i++){
+			if(found_mismatch) break;
+			for(int j=0; j<bundles.at(0).size(); j++){
+				if(bundles[i][j] == '*') continue;
+				if(bundles[i][j] != child.bundles[i+offset][j]){
+					found_mismatch = true;
+					break;
+				}
+			}
+		}
+		if(!found_mismatch) return true;
+	}
+	return false;
 }
 
 list<Factor> Factor::getNextFactors(
 	const unordered_map<std::string, Factor>& alphabet, 
 	int max_width, int max_features) const {
-	if(bundles[0][0]=='#') return {};
+	if(bundles[0][0]=='#' || bundles[bundles.size()-1][0] == '#') return {};
 
 	list<Factor> result;
 	int last = bundles.size()-1;

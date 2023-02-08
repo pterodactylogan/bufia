@@ -46,6 +46,45 @@ void TestGenerates() {
 	Factor sm_child({{'#', '#'}, {'+', '*'}});
 
 	std::cout << cons1.generates(sm_child) << std::endl; // exp T
+
+	vec = {{'#', '#'}, {'*', '+'}, {'#', '#'}};
+	Factor bounded(vec);
+
+	vec = {{'#', '#'}, {'*', '+'}, {'+', '+'}, {'*', '*'}};
+	Factor nc_4(vec);
+
+	std::cout << "Expect F: " << bounded.generates(nc_4) <<std::endl;
+
+	vec = {{'#', '#'}, {'*', '+'}};
+	Factor l_bounded(vec);
+
+	vec = {{'#', '#'}, {'-', '+'}, {'+', '+'}};
+	Factor lb_child(vec);
+
+	vec = {{'*', '+'}, {'#', '#'}};
+	Factor r_bounded(vec);
+
+	vec = {{'-', '+'}, {'+', '+'}, {'#', '#'}};
+	Factor rb_child(vec);
+
+	vec = {{'-', '+'}, {'+', '-'}, {'#', '#'}};
+	Factor rb_nc(vec);
+
+	std::cout << "Expect T: " << l_bounded.generates(lb_child) << std::endl;
+	std::cout << "Expect T: " << r_bounded.generates(rb_child) << std::endl;
+	std::cout << "Expect F: " << r_bounded.generates(rb_nc) << std::endl;
+
+	vec = {{'-', '*'}, {'*', '+'}};
+	Factor unbounded(vec);
+
+	vec = {{'+', '*'}, {'-', '+'}, {'+', '+'}, {'-', '-'}};
+	Factor ub_child(vec);
+
+	vec = {{'+', '*'}, {'-', '+'}, {'+', '-'}, {'-', '-'}};
+	Factor ub_nc(vec);
+
+	std::cout << "Expect T: " << unbounded.generates(ub_child) << std::endl;
+	std::cout << "Expect F: " << unbounded.generates(ub_nc) << std::endl;
 }
 
 void TestNextFactors() {	
@@ -108,7 +147,7 @@ void TestComputeGeneratedNGrams() {
 
 int main(int argc, char **argv) {
 	//TestNextFactors();
-	//TestGenerates();
+	TestGenerates();
 	//TestCovers();
-	TestComputeGeneratedNGrams();
+	//TestComputeGeneratedNGrams();
 }

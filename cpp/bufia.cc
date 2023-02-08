@@ -20,7 +20,7 @@ using ::std::list;
 using ::std::set;
 
 int main(int argc, char **argv) {
-	const int MAX_FACTOR_WIDTH = 2;
+	const int MAX_FACTOR_WIDTH = 3;
 	const int MAX_FEATURES_PER_BUNDLE = 3;
 	const int ABDUCTIVE_PRINCIPLE = 1;
 
@@ -77,14 +77,27 @@ int main(int argc, char **argv) {
 			}
 
 			// if Abductive principle = 1, check whether constraint extends the grammar
-			bool redundant = true;
 			vector<string> ngrams = ComputeGeneratedNGrams(current, alphabet);
+			bool added_ngrams = false;
 			for(const auto& ngram : ngrams){
-				if(banned_ngrams.insert(ngram).second == true) {
-					redundant = false;
+				bool redundant = false;
+				// check all substrings to see if those are already banned
+				for(int i = 1; i<ngram.size(); i++){
+					if(redundant) break;
+					for(int offset = 0; offset <= ngram.size()-i; offset++){
+						// check if ngram[offset:offset+i] is in banned_ngrams
+						string slice = ngram.substr(offset, i);
+						if(banned_ngrams.find(slice) != banned_ngrams.end()) {
+							redundant = true;
+							break;
+						}
+					}
+				}
+				if(!redundant && banned_ngrams.insert(ngram).second == true) {
+					added_ngrams = true;
 				}
 			}
-			if(!redundant) {
+			if(added_ngrams) {
 				constraints.push_back(current);
 			}
 		}

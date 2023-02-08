@@ -52,7 +52,7 @@ string Display(const Factor& fac, const vector<string>& feature_order) {
 				result += bundle.at(i) + feature_order.at(i) + ",";
 			}
 		}
-		result.pop_back();
+		if(result[result.size()-1] == ',') result.pop_back();
 		result += "]";
 	}
 	return result;
