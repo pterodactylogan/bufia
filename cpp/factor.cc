@@ -149,7 +149,7 @@ list<Factor> Factor::getNextFactors(
 	}
 
 	if(num_features < max_features) {
-		for(unset_index; unset_index<bundles[last].size(); unset_index++){
+		for(; unset_index<bundles[last].size(); unset_index++){
 			vector<vector<char>> next_pos = bundles;
 			next_pos[last][unset_index] = '+';
 
