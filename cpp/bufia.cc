@@ -20,14 +20,30 @@ using ::std::list;
 using ::std::set;
 
 int main(int argc, char **argv) {
-	const int MAX_FACTOR_WIDTH = 3;
-	const int MAX_FEATURES_PER_BUNDLE = 3;
+	int MAX_FACTOR_WIDTH = 3;
+	int MAX_FEATURES_PER_BUNDLE = 3;
 	const int ABDUCTIVE_PRINCIPLE = 1;
 
 	// load files from input flags
-	if(argc < 2) {
+	if(argc < 3) {
 		std::cout << "Expected at least two arguments: feature file and data file";
 		return 1;
+	}
+
+	for(int i=3; i<argc; i++) {
+		std::string arg = argv[i];
+
+		std::size_t pos = arg.find("k=");
+		if(pos != string::npos){
+			MAX_FACTOR_WIDTH = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
+		pos = arg.find("n=");
+		if(pos != string::npos){
+			MAX_FEATURES_PER_BUNDLE = std::stoi(arg.substr(pos+2));
+			continue;
+		}
 	}
 
 	string feature_filename = argv[1];
