@@ -20,6 +20,16 @@ using ::std::pair;
 using ::std::list;
 using ::std::set;
 
+double diff_timespec(struct timespec *time1, struct timespec *time0) {
+	if(time1 == nullptr) {
+		timespec t;
+		time1 = &t;
+		clock_gettime(CLOCK_REALTIME, time1);
+	}
+  return (time1->tv_sec - time0->tv_sec)
+      + (time1->tv_nsec - time0->tv_nsec) / 1000000000.0;
+}
+
 int main(int argc, char **argv) {
 	int MAX_FACTOR_WIDTH = 3;
 	int MAX_FEATURES_PER_BUNDLE = 3;
@@ -67,8 +77,8 @@ int main(int argc, char **argv) {
 	}
 
 	// STEP 2: Initialize alphabet and positive data
-	time_t start_time;
-	if(DEBUG_MODE) time(&start_time);
+	timespec start_time;
+	if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &start_time);
 
 	vector<string> feature_order;
 	// symbol -> width-1 Factor
@@ -79,8 +89,8 @@ int main(int argc, char **argv) {
 		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet);
 
 	if(DEBUG_MODE) {
-		std::cout << "Time loading data: " << 
-		difftime(time(nullptr), start_time) << std::endl;
+		std::cout << "Time loading data (ns): " << 
+		diff_timespec(nullptr, &start_time) << std::endl;
 	}
 
 	// STEP 3: BUFIA algorithm
@@ -91,26 +101,26 @@ int main(int argc, char **argv) {
 	vector<Factor> constraints;
 	set<string> banned_ngrams;
 
-	time_t total_covers = 0;
-	time_t total_contains = 0;
-	time_t total_extension_check = 0;
+	double total_covers = 0;
+	double total_contains = 0;
+	double total_extension_check = 0;
 
 	while(!queue.empty()) {
 		Factor current = queue.front();
 		queue.pop_front();
 		// if this factor is already covered by current constraints, skip
-		time_t begin;
-		if(DEBUG_MODE) time(&begin);
+		timespec begin;
+		if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &begin);
 		bool covers = Covers(constraints, current);
-		if(DEBUG_MODE) total_covers += difftime(time(nullptr), begin);
+		if(DEBUG_MODE) total_covers += diff_timespec(nullptr, &begin);
 
 		if(covers) continue;
 
 		// if something that matches this factor is in the positive data,
 		// get all applicable child factors and add to queue
-		if(DEBUG_MODE) time(&begin);
+		if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &begin);
 		bool contains = Contains(positive_data[current.bundles.size()], current);
-		if(DEBUG_MODE) total_contains += difftime(time(nullptr), begin);
+		if(DEBUG_MODE) total_contains += diff_timespec(nullptr, &begin);
 
 		if(contains) {
 			list<Factor> next_factors = current.getNextFactors(alphabet, 
@@ -127,7 +137,7 @@ int main(int argc, char **argv) {
 			}
 
 			// if Abductive principle = 1, check whether constraint extends the grammar
-			if(DEBUG_MODE) time(&begin);
+			if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &begin);
 			vector<string> ngrams = ComputeGeneratedNGrams(current, alphabet);
 			bool added_ngrams = false;
 			for(const auto& ngram : ngrams){
@@ -148,7 +158,7 @@ int main(int argc, char **argv) {
 					added_ngrams = true;
 				}
 			}
-			if(DEBUG_MODE) total_extension_check += difftime(time(nullptr), begin);
+			if(DEBUG_MODE) total_extension_check += diff_timespec(nullptr, &begin);
 			if(added_ngrams) {
 				constraints.push_back(current);
 			}
@@ -159,7 +169,7 @@ int main(int argc, char **argv) {
 		std::cout << "Total seconds on Covers(): " << total_covers << std::endl;
 		std::cout << "Total seconds on Contains(): " << total_contains << std::endl;
 		std::cout << "Total seconds on extension checking: " << total_extension_check << std::endl;
-		std::cout << "Total time: " << difftime(time(nullptr), start_time) << std::endl;
+		std::cout << "Total time: " << diff_timespec(nullptr, &start_time) << std::endl;
 	}
 
 	for(Factor const& constraint : constraints){
