@@ -1,6 +1,6 @@
 # Usage
 
-Using the c++ bufia implementation requires the GCC compiler.
+Using the c++ bufia implementation requires the GCC compiler with version 11+ (note: on seawulf or ookami, run `module load gcc` to get a recent gcc version). Users can also use other c++ compilers if they update the `CC` variable in `Makefile`.
 
 1. run `make bufia` to compile the program.
 2. run `./bufia wordfile featurefile [OPTIONS...]` to execute the program.
