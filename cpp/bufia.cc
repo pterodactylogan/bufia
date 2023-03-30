@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	string feature_filename = argv[1];
-	string data_filename = argv[2];
+	string feature_filename = argv[2];
+	string data_filename = argv[1];
 	std::ifstream feature_file (feature_filename);
 	std::ifstream data_file (data_filename);
 
@@ -104,6 +104,8 @@ int main(int argc, char **argv) {
 	double total_covers = 0;
 	double total_contains = 0;
 	double total_extension_check = 0;
+	double gen_ngrams_time = 0;
+	double check_redundant_time = 0;
 
 	while(!queue.empty()) {
 		Factor current = queue.front();
@@ -139,6 +141,9 @@ int main(int argc, char **argv) {
 			// if Abductive principle = 1, check whether constraint extends the grammar
 			if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &begin);
 			vector<string> ngrams = ComputeGeneratedNGrams(current, alphabet);
+			timespec fin_ngrams_time;
+			if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &fin_ngrams_time);
+			if(DEBUG_MODE) gen_ngrams_time += diff_timespec(&fin_ngrams_time, &begin);
 			bool added_ngrams = false;
 			for(const auto& ngram : ngrams){
 				bool redundant = false;
@@ -158,6 +163,7 @@ int main(int argc, char **argv) {
 					added_ngrams = true;
 				}
 			}
+			if(DEBUG_MODE) check_redundant_time += diff_timespec(nullptr, &fin_ngrams_time);
 			if(DEBUG_MODE) total_extension_check += diff_timespec(nullptr, &begin);
 			if(added_ngrams) {
 				constraints.push_back(current);
@@ -169,6 +175,8 @@ int main(int argc, char **argv) {
 		std::cout << "Total seconds on Covers(): " << total_covers << std::endl;
 		std::cout << "Total seconds on Contains(): " << total_contains << std::endl;
 		std::cout << "Total seconds on extension checking: " << total_extension_check << std::endl;
+		std::cout << "Time generating NGrams: " << gen_ngrams_time << std::endl;
+		std::cout << "Time checking ngram redundancy: " << check_redundant_time << std::endl;
 		std::cout << "Total time: " << diff_timespec(nullptr, &start_time) << std::endl;
 	}
 
