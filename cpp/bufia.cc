@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 	int MAX_FACTOR_WIDTH = 3;
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
-	const int ABDUCTIVE_PRINCIPLE = 1;
+	int ABDUCTIVE_PRINCIPLE = 1;
 
 	// STEP 1: read input flags
 	if(argc < 3) {
@@ -54,6 +54,12 @@ int main(int argc, char **argv) {
 		pos = arg.find("n=");
 		if(pos != string::npos){
 			MAX_FEATURES_PER_BUNDLE = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
+		pos = arg.find("a=");
+		if(pos != string::npos){
+			ABDUCTIVE_PRINCIPLE = std::stoi(arg.substr(pos+2));
 			continue;
 		}
 
