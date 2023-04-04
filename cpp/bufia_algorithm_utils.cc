@@ -13,29 +13,37 @@ using ::std::string;
 bool Contains(const vector<Factor>& positive_data,
 	const Factor& parent) {
 	bool found = false;
-	#pragma omp parallel for shared(found)
+	#pragma omp parallel shared(found) 
+	{
+		#pragma omp for
 		for(int i=0; i<positive_data.size(); i++){
-			// TODO: is there a way to actually make all threads stop?
-			if(found) continue;
-
 			if(parent.generates(positive_data[i])){
-				found = true;
+				#pragma omp critical
+				{
+					found = true;
+				}
+				#pragma omp cancel for
 			}
 		}
+	}
 	return found;
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child) {
 	bool found = false;
-	#pragma omp parallel for shared(found)
+	#pragma omp parallel shared(found)
+	{
+		#pragma omp for
 		for(int i=0; i<constraints.size(); i++){
-			//TODO: ditto above
-			if(found) continue;
-
 			if(constraints[i].generates(child)){
-				found = true;
+				#pragma omp critical
+				{
+					found = true;
+				}
+				#pragma omp cancel for
 			}
 		}
+	}
 	return found;
 }
 
