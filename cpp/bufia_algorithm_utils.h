@@ -22,7 +22,7 @@ bool Covers(const vector<Factor>& constraints, const Factor& child);
 std::string Display(const Factor& fac, 
 	const vector<std::string>& feature_order);
 
-vector<std::string> ComputeGeneratedNGrams(const Factor& fac,
+vector<vector<std::string>> ComputeGeneratedNGrams(const Factor& fac,
 	const std::unordered_map<std::string, Factor>& alphabet);
 
 #endif /* BUFIA_ALGORITHM_UTILS_H */

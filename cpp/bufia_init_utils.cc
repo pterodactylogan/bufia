@@ -75,8 +75,8 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		while (i<symbol_order.size()) {
 			value = values.substr(0, pos);
 			if(value != "0" && value!="+" && value !="-"){
-				std::cout << "Invalid value symbol: " + value + ". This may cause"
-				" unexpected behavior";
+				std::cout << "Invalid value symbol: " << value << ". This may cause"
+				" unexpected behavior" << std::endl;
 			}
 
 			if (alphabet.find(symbol_order[i]) == alphabet.end()) {
