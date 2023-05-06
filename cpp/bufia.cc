@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
 			if(DEBUG_MODE) total_extension_check += diff_timespec(nullptr, &begin);
 			if(added_ngrams) {
 				constraints.push_back(current);
+				if(DEBUG_MODE) std::cout << Display(current, feature_order) << std::endl;
 			}
 		}
 	}
@@ -185,10 +186,10 @@ int main(int argc, char **argv) {
 		std::cout << "Time generating NGrams: " << gen_ngrams_time << std::endl;
 		std::cout << "Time checking ngram redundancy: " << check_redundant_time << std::endl;
 		std::cout << "Total time: " << diff_timespec(nullptr, &start_time) << std::endl;
-	}
-
-	for(Factor const& constraint : constraints){
-		std::cout << Display(constraint, feature_order) << std::endl;
+	} else {
+		for(Factor const& constraint : constraints){
+			std::cout << Display(constraint, feature_order) << std::endl;
+		}
 	}
 
 	return 0;
