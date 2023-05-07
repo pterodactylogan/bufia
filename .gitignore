@@ -15,3 +15,6 @@ bufia
 cpp/bufia
 cpp/bufia_omp
 cpp/Makefile
+*.log
+*.map
+*.slurm
