@@ -44,7 +44,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		if(symbol.empty()){
 			if(symbol_order.size() > 0) {
 				std::cout << "WARNING: you have a blank entry in" 
-				" your symbol list. This may cause unexpected behavior.";
+				" your symbol list. This may cause unexpected behavior." << std::endl;
 			} else {
 				symbols.erase(0, pos+1);
 				pos = symbols.find(",");
