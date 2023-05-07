@@ -1,3 +1,4 @@
+#include <ctime>
 #include <iostream>
 #include <list>
 #include <memory>
@@ -136,18 +137,21 @@ void TestComputeGeneratedNGrams() {
 
 	Factor fac({{'*', '-'}, {'+', '*'}, {'*', '*'}});
 
-	vector<string> ngrams = ComputeGeneratedNGrams(fac, alphabet);
+	vector<vector<string>> ngrams = ComputeGeneratedNGrams(fac, alphabet);
 	std::cout << ngrams.size() << std::endl; // exp 12
 
 	for(const auto& ngram : ngrams){
-		std::cout << ngram << ", ";
+		for(const auto& symbol : ngram) {
+			std::cout << symbol << " ";
+		}
+		std::cout << ", ";
 	}
 	std::cout << std::endl;
 }
 
 int main(int argc, char **argv) {
-	//TestNextFactors();
+	TestNextFactors();
 	TestGenerates();
-	//TestCovers();
-	//TestComputeGeneratedNGrams();
+	TestCovers();
+	TestComputeGeneratedNGrams();
 }

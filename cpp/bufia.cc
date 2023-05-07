@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 	list<Factor> queue = {Factor(vector<vector<char>>(1, 
 		vector<char>(feature_order.size(), '*')))};
 	vector<Factor> constraints;
-	set<string> banned_ngrams;
+	set<vector<string>> banned_ngrams;
 
 	double total_covers = 0;
 	double total_contains = 0;
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 
 			// if Abductive principle = 1, check whether constraint extends the grammar
 			if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &begin);
-			vector<string> ngrams = ComputeGeneratedNGrams(current, alphabet);
+			vector<vector<string>> ngrams = ComputeGeneratedNGrams(current, alphabet);
 			timespec fin_ngrams_time;
 			if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &fin_ngrams_time);
 			if(DEBUG_MODE) gen_ngrams_time += diff_timespec(&fin_ngrams_time, &begin);
@@ -158,7 +158,8 @@ int main(int argc, char **argv) {
 					if(redundant) break;
 					for(int offset = 0; offset <= ngram.size()-i; offset++){
 						// check if ngram[offset:offset+i] is in banned_ngrams
-						string slice = ngram.substr(offset, i);
+						vector<string> slice = 
+							vector<string>(ngram.begin()+offset, ngram.begin() + offset + i);
 						if(banned_ngrams.find(slice) != banned_ngrams.end()) {
 							redundant = true;
 							break;
@@ -173,6 +174,7 @@ int main(int argc, char **argv) {
 			if(DEBUG_MODE) total_extension_check += diff_timespec(nullptr, &begin);
 			if(added_ngrams) {
 				constraints.push_back(current);
+				if(DEBUG_MODE) std::cout << Display(current, feature_order) << std::endl;
 			}
 		}
 	}
@@ -184,10 +186,10 @@ int main(int argc, char **argv) {
 		std::cout << "Time generating NGrams: " << gen_ngrams_time << std::endl;
 		std::cout << "Time checking ngram redundancy: " << check_redundant_time << std::endl;
 		std::cout << "Total time: " << diff_timespec(nullptr, &start_time) << std::endl;
-	}
-
-	for(Factor const& constraint : constraints){
-		std::cout << Display(constraint, feature_order) << std::endl;
+	} else {
+		for(Factor const& constraint : constraints){
+			std::cout << Display(constraint, feature_order) << std::endl;
+		}
 	}
 
 	return 0;
