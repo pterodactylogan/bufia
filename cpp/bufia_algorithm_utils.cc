@@ -24,21 +24,15 @@ bool Contains(const vector<Factor>& positive_data,
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child) {
-	bool found = false;
-	#pragma omp parallel shared(found)
-	{
-		#pragma omp for
-		for(int i=0; i<constraints.size(); i++){
-			if(constraints[i].generates(child)){
-				#pragma omp critical
-				{
-					found = true;
-				}
-				#pragma omp cancel for
-			}
+	int8_t found = 0;
+	#pragma omp parallel for reduction(+:found)
+	for(int i=0; i<constraints.size(); i++){
+		if(constraints[i].generates(child)){
+			found += 1;
+			# pragma omp cancel for
 		}
 	}
-	return found;
+	return found > 0;
 }
 
 string Display(const Factor& fac, const vector<string>& feature_order) {
