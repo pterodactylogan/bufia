@@ -12,3 +12,6 @@ bufia
 *test*
 *.dyn_hi
 *.dyn_o
+*.slurm
+*.map
+*.log
