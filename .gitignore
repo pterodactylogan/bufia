@@ -14,7 +14,8 @@ bufia
 *.dyn_o
 cpp/bufia
 cpp/bufia_omp
+cpp/bufia_arm
 cpp/Makefile
-*.log
-*.map
 *.slurm
+*.map
+*.log
