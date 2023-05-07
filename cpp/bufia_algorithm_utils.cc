@@ -12,21 +12,15 @@ using ::std::string;
 
 bool Contains(const vector<Factor>& positive_data,
 	const Factor& parent) {
-	bool found = false;
-	#pragma omp parallel shared(found) 
-	{
-		#pragma omp for
-		for(int i=0; i<positive_data.size(); i++){
-			if(parent.generates(positive_data[i])){
-				#pragma omp critical
-				{
-					found = true;
-				}
-				#pragma omp cancel for
-			}
+	int8_t found = 0;
+	#pragma omp parallel for reduction(+:found)
+	for(int i=0; i<positive_data.size(); i++){
+		if(parent.generates(positive_data[i]) || found > 1){
+			found += 1;
+			#pragma omp cancel for
 		}
 	}
-	return found;
+	return found > 0;
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child) {
