@@ -12,27 +12,35 @@ using ::std::string;
 
 bool Contains(const vector<Factor>& positive_data,
 	const Factor& parent) {
-	int found = 0;
-	#pragma omp parallel for reduction(+:found)
-	for(int i=0; i<positive_data.size(); i++){
-		if(parent.generates(positive_data[i])){
-			++ found;
-			#pragma omp cancel for
+	bool found = false;
+	#pragma omp parallel default(none) shared(positive_data, parent, found)
+	{
+		#pragma omp for
+		for(int i=0; i<positive_data.size(); i++){
+			if(parent.generates(positive_data[i])){
+		#pragma omp critical
+				found = true;
+		#pragma omp cancel for
+			}
 		}
 	}
-	return found > 0;
+	return found;
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child) {
-	int found = 0;
-	#pragma omp parallel for reduction(+:found)
-	for(int i=0; i<constraints.size(); i++){
-		if(constraints[i].generates(child)){
-			++ found;
-			# pragma omp cancel for
+	bool found = false;
+	#pragma omp parallel default(none) shared(constraints, child, found)
+	{
+		#pragma omp for
+		for(int i=0; i<constraints.size(); i++){
+			if(constraints[i].generates(child)){
+		#pragma omp critical
+				found = true;
+		#pragma omp cancel for
+			}
 		}
 	}
-	return found > 0;
+	return found;
 }
 
 string Display(const Factor& fac, const vector<string>& feature_order) {
