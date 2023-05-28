@@ -13,32 +13,54 @@ using ::std::string;
 bool Contains(const vector<Factor>& positive_data,
 	const Factor& parent) {
 	bool found = false;
-	#pragma omp parallel default(none) shared(positive_data, parent, found)
+	#pragma omp parallel default(none) shared(found, positive_data, parent)
 	{
-		#pragma omp for
-		for(int i=0; i<positive_data.size(); i++){
-			if(parent.generates(positive_data[i])){
-		#pragma omp critical
-				found = true;
-		#pragma omp cancel for
+		#pragma omp single
+		{
+			for(int i=0; i<positive_data.size(); i++){
+				if(found) {
+					printf("breaking\n");
+					break;
+				}
+				Factor fac = positive_data[i];
+				#pragma omp task firstprivate(parent, fac) shared(found)
+				{
+					printf("%d\n", omp_get_thread_num());
+					if(parent.generates(fac)){
+						#pragma omp critical
+						{
+							found = true;
+						}
+							printf("found\n");
+					}
+				}
 			}
 		}
+		#pragma omp taskwait
 	}
+	std::cout << "returning" << std::endl;
 	return found;
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child) {
 	bool found = false;
-	#pragma omp parallel default(none) shared(constraints, child, found)
+	#pragma omp parallel default(none) shared(constraints, found, child)
 	{
-		#pragma omp for
-		for(int i=0; i<constraints.size(); i++){
-			if(constraints[i].generates(child)){
-		#pragma omp critical
-				found = true;
-		#pragma omp cancel for
+		#pragma omp single
+		{
+			for(int i=0; i<constraints.size(); i++){
+				if(found) break;
+				Factor fac = constraints[i];
+				#pragma omp task firstprivate(child, fac) shared(found)
+				{
+					if(fac.generates(child)){
+						#pragma omp critical
+							found = true;
+					}
+				}
 			}
 		}
+		#pragma omp taskwait
 	}
 	return found;
 }
