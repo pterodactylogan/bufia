@@ -4,6 +4,7 @@
 #include <iostream>
 #include <list>
 #include <memory>
+#include <mpi.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -100,6 +101,16 @@ int main(int argc, char **argv) {
 	}
 
 	// STEP 3: BUFIA algorithm
+
+	// Begin MPI Manager/Worker structure
+	int rank, size;
+	MPI::Init(argc, argv);
+	rank = MPI::COMM_WORLD.Get_rank();
+	size = MPI::COMM_WORLD.Get_size();
+	std::cout << "I am " << rank << " of " << size << "\n";
+	MPI::Finalize();
+	return 0;
+  // End MPI section
 
 	// start from length 1 factor with '*' for every feature (ie., universal matcher)
 	list<Factor> queue = {Factor(vector<vector<char>>(1, 
