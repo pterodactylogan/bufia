@@ -104,12 +104,11 @@ int main(int argc, char **argv) {
 
 	// Begin MPI Manager/Worker structure
 	int rank, size;
-	MPI_Comm new_comm;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(new_comm, &size);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	std::cout << "I am " << rank << " of " << size << "\n";
-	MPI::Finalize();
+	MPI_Finalize();
 	return 0;
   // End MPI section
 
