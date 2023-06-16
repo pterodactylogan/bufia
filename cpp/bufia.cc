@@ -102,20 +102,73 @@ int main(int argc, char **argv) {
 
 	// STEP 3: BUFIA algorithm
 
+	// start from length 1 factor with '*' for every feature (ie., universal matcher)
+	Factor start = Factor(vector<vector<char>>(1, vector<char>(feature_order.size(), '*')));
+	list<Factor> queue = {start};
+	vector<Factor> constraints;
+
 	// Begin MPI Manager/Worker structure
+
+	std:: cout << "begin MPI" << std::endl;
+
 	int rank, size;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	std::cout << "I am " << rank << " of " << size << "\n";
+	//std::cout << "I am " << rank << " of " << size << "\n";
+	
+	if(rank==0) {
+		// MANAGER flow
+		bool done = false;
+		while(!done) {
+			std::cout << "manager" << std::endl;
+			// get results from all workers
+			// update constraints
+			// add to queue
+			if(queue.empty()) { // && all workers finished
+				done = true;
+				// send done message to workers
+			}
+			// send next n in queue to any proceses that finished
+			for (int i=1; i<size; i++) {
+				if(!queue.empty()) {
+					Factor a = queue.front();
+					// convert Factor.bundles to array to send
+					char arr[a.bundles.size()][a.bundles.at(0).size()];
+					for(int i=0; i<a.bundles.size(); ++i) {
+						std::copy(a.bundles.at(i).begin(), a.bundles.at(i).end(), arr[i]);
+					}
+					MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, 0, MPI_COMM_WORLD);
+	  		}
+	  	}
+	  	done = true;
+		}
+	} else {
+		// WORKER flow
+		bool done = false;
+		while(!done) {
+			std::cout << "worker" << std::endl;
+			// recieve work from manager
+			MPI_Status status;
+			char arr[start.bundles.size()][start.bundles.at(0).size()];
+			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, 0, 0, MPI_COMM_WORLD, &status);
+			std::cout << "Rank: " << rank << ", recieved: " << sizeof(arr) << std::endl;
+			// Convert bundle array back into Factor
+			Factor fac = start;
+			for(int i=0; i<fac.bundles.size(); ++i) {
+				fac.bundles[i] = vector<char>(arr[i], arr[i] + (sizeof(arr[i])/ sizeof(arr[i][0])));
+			}
+			std::cout << "rank: " << rank << " factor: " << fac.toString() << std::endl;
+			done=true;
+			// if message == done, done=true, break
+			// compute result
+			// send result to manager
+		}
+	}
+
 	MPI_Finalize();
 	return 0;
   // End MPI section
-
-	// start from length 1 factor with '*' for every feature (ie., universal matcher)
-	list<Factor> queue = {Factor(vector<vector<char>>(1, 
-		vector<char>(feature_order.size(), '*')))};
-	vector<Factor> constraints;
 	set<vector<string>> banned_ngrams;
 
 	double total_covers = 0;
