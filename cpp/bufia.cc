@@ -116,8 +116,9 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 	//std::cout << "I am " << rank << " of " << size << "\n";
-	
-	char arr[start.bundles.size()][start.bundles.at(0).size()];
+
+	// MPI_Datatype dt_symb;
+	// MPI_Type_contiguous(start.bundles.at(0).size(), MPI_CHAR, *dt_symb);
 
 	if(rank==0) {
 		// MANAGER flow
@@ -148,13 +149,12 @@ int main(int argc, char **argv) {
 			}
 		}
 
-
 		// send work to everyone, add all to active_procs
 		for(int i=1; i<num_procs; ++i) {
 			Factor a = queue.front();
 			queue.pop_front();
 			// convert Factor.bundles to array to send
-			// char arr[a.bundles.size()][a.bundles.at(0).size()];
+			char arr[a.bundles.size()][a.bundles.at(0).size()];
 			for(int i=0; i<a.bundles.size(); ++i) {
 				std::copy(a.bundles.at(i).begin(), a.bundles.at(i).end(), arr[i]);
 			}
@@ -163,30 +163,34 @@ int main(int argc, char **argv) {
 		}
 
 		bool done = false;
+
 		while(!done) {
 			//std::cout << "manager" << std::endl;
 			// get results from any worker
 			MPI_Status status;
-			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			int bytes_amount;
+			MPI_Get_count(&status, MPI_BYTE, &bytes_amount);
+			int symb_size = sizeof(char[start.bundles.size()][start.bundles.at(0).size()]);
+			char arr[bytes_amount/symb_size][start.bundles.at(0).size()];
+
+			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
 			active_procs.erase(status.MPI_SOURCE);
 			//std::cout<< "manager, message from: " << status.MPI_SOURCE << std::endl;
-			Factor fac = start;
+			Factor fac(bytes_amount/symb_size, start.bundles.at(0).size());
 			for(int i=0; i<fac.bundles.size(); ++i) {
 				fac.bundles[i] = vector<char>(arr[i], arr[i] + (sizeof(arr[i])/ sizeof(arr[i][0])));
 			}
 			if(status.MPI_TAG == 0) {
 				// fac not found in positive data. add as constraint.
 				constraints.push_back(fac);
-				std::cout << "manager, constraint: " << Display(fac, feature_order) << std::endl;
+				//std::cout << "manager, constraint: " << Display(fac, feature_order) << std::endl;
 				//if(constraints.size() > 10) done = true;
 			} else {
-				//std::cout << "manager, found: " << fac.toString() << std::endl;
+				//std::cout << "manager, found: " << Display(fac, feature_order) << std::endl;
 				// found. add next factors to queue.
 				list<Factor> next_factors = fac.getNextFactors(alphabet, 
 				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
-				next_factors.remove_if([constraints](Factor fac){
-					return Covers(constraints, fac);
-				});
 
 				queue.splice(queue.end(), next_factors);
 			}
@@ -197,18 +201,32 @@ int main(int argc, char **argv) {
 			}
 
 			// send next n in queue to whatever process finished
-			Factor a = queue.front();
+			Factor q = queue.front();
 			queue.pop_front();
-			// convert Factor.bundles to array to send
-			for(int i=0; i<a.bundles.size(); ++i) {
-				std::copy(a.bundles.at(i).begin(), a.bundles.at(i).end(), arr[i]);
+			while(Covers(constraints, q)) {
+				q = queue.front();
+				queue.pop_front();
+				if(queue.empty()) {
+					if(active_procs.empty()) done = true; 
+					break;
+				}
 			}
-			MPI_Send(&arr, sizeof(arr), MPI_BYTE, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+
+			if(Covers(constraints, q)) continue;
+
+			char q_arr[q.bundles.size()][q.bundles.at(0).size()];
+			// convert Factor.bundles to array to send
+			for(int i=0; i<q.bundles.size(); ++i) {
+				std::copy(q.bundles.at(i).begin(), q.bundles.at(i).end(), q_arr[i]);
+			}
+			//std::cout << "manager, sending: " << Display(q, feature_order) << std::endl;
+			MPI_Send(&q_arr, sizeof(q_arr), MPI_BYTE, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
 			active_procs.insert(status.MPI_SOURCE);
 		}
 
 		// send done message to workers
 		// add enum for tags?
+		char arr[1][start.bundles.at(0).size()];
 		for(int i=0; i<num_procs; ++i){
 			MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, /*tag=*/1, MPI_COMM_WORLD);
 		}
@@ -219,13 +237,19 @@ int main(int argc, char **argv) {
 			//std::cout << "worker" << std::endl;
 			// recieve work from manager
 			MPI_Status status;
+			MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			int bytes_amount;
+			MPI_Get_count(&status, MPI_BYTE, &bytes_amount);
+			int symb_size = sizeof(char[start.bundles.size()][start.bundles.at(0).size()]);
+			char arr[bytes_amount/symb_size][start.bundles.at(0).size()];
+
 			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			if(status.MPI_TAG == 1) break;
 
 
 
 			// Convert bundle array back into Factor
-			Factor fac = start;
+			Factor fac(bytes_amount/symb_size, start.bundles.at(0).size());
 			for(int i=0; i<fac.bundles.size(); ++i) {
 				fac.bundles[i] = vector<char>(arr[i], arr[i] + (sizeof(arr[i])/ sizeof(arr[i][0])));
 			}
@@ -233,15 +257,16 @@ int main(int argc, char **argv) {
 
 			// compute result
 			if(Contains(positive_data[fac.bundles.size()], fac)) {
+				//std::cout << "rank: " << rank << " found fac: " << Display(fac, feature_order) << std::endl;
 				MPI_Send(&arr, sizeof(arr), MPI_BYTE, 0, /*tag=*/1, MPI_COMM_WORLD);
 			} else {
+				//std::cout << "rank: " << rank << " banned fac: " << Display(fac, feature_order) << std::endl;
 				MPI_Send(&arr, sizeof(arr), MPI_BYTE, 0, /*tag=*/0, MPI_COMM_WORLD);
 			}
 		}
 	}
 
 	MPI_Finalize();
-	return 0;
   // End MPI section
 	// set<vector<string>> banned_ngrams;
 
