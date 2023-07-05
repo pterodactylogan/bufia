@@ -40,7 +40,6 @@ void SendWork(const vector<Factor>& constraints, int chunk_size, int num_procs,
 			if (packaged == chunk_size) {
 				// send completed package
 				MPI_Send(&chunk, sizeof(chunk), MPI_BYTE, i, 0, MPI_COMM_WORLD);
-				std::cout << "manager, work sent to: " << i << std::endl;
 				idle_procs.erase(idle_procs.find(i));
 				start = curr;
 			} else {
