@@ -10,7 +10,7 @@
 
 // Takes a file object with the features for each character in the alphabet.
 // Returns a map from alphabet entries to corresponding 1-dimensional factors.
-// `featuer_order` will be populated with the feature names in the order
+// `feature_order` will be populated with the feature names in the order
 // they appear in the file.
 std::unordered_map<std::string, Factor> 
 	LoadAlphabetFeatures(std::ifstream* feature_file, 

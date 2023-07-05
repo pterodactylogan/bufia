@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <map>
 #include <memory>
 #include <mpi.h>
 #include <unordered_map>
@@ -11,15 +12,17 @@
 
 #include "bufia_algorithm_utils.h"
 #include "bufia_init_utils.h"
+#include "bufia_mpi_utils.h"
 #include "factor.h"
 
+using ::std::list;
+using ::std::map;
+using ::std::pair;
+using ::std::set;
 using ::std::string;
-using ::std::vector;
 using ::std::unordered_map;
 using ::std::unordered_set;
-using ::std::pair;
-using ::std::list;
-using ::std::set;
+using ::std::vector;
 
 double diff_timespec(struct timespec *time1, struct timespec *time0) {
 	if(time1 == nullptr) {
@@ -90,6 +93,7 @@ int main(int argc, char **argv) {
 	vector<string> feature_order;
 	// symbol -> width-1 Factor
 	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file, feature_order);
+	const int NUM_FEAT = feature_order.size();
 
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
@@ -103,8 +107,7 @@ int main(int argc, char **argv) {
 	// STEP 3: BUFIA algorithm
 
 	// start from length 1 factor with '*' for every feature (ie., universal matcher)
-	Factor start = Factor(vector<vector<char>>(1, vector<char>(feature_order.size(), '*')));
-	list<Factor> queue = {start};
+	Factor start = Factor(vector<vector<char>>(1, vector<char>(NUM_FEAT, '*')));
 	vector<Factor> constraints;
 
 	// Begin MPI Manager/Worker structure
@@ -115,159 +118,141 @@ int main(int argc, char **argv) {
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-	//std::cout << "I am " << rank << " of " << size << "\n";
 
-	// MPI_Datatype dt_symb;
-	// MPI_Type_contiguous(start.bundles.at(0).size(), MPI_CHAR, *dt_symb);
+	int chunk_size = 2;
 
 	if(rank==0) {
+		list<Factor> queue = {start};
 		// MANAGER flow
-		set<int> active_procs;
-
-		while(queue.size() < num_procs) {
-			Factor current = queue.front();
-			queue.pop_front();
-			// if this factor is already covered by current constraints, skip
-			bool covers = Covers(constraints, current);
-			if(covers) continue;
-
-			// if something that matches this factor is in the positive data,
-			// get all applicable child factors and add to queue
-			bool contains = Contains(positive_data[current.bundles.size()], current);
-
-			if(contains) {
-				list<Factor> next_factors = current.getNextFactors(alphabet, 
-					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
-				next_factors.remove_if([constraints](Factor fac){
-					return Contains(constraints, fac);
-				});
-
-				queue.splice(queue.end(), next_factors);
-			} else {
-				constraints.push_back(current);
-				continue;
-			}
-		}
-
-		// send work to everyone, add all to active_procs
+		map<int, list<Factor>::iterator> proc_locs;
+		set<int> idle_procs;
 		for(int i=1; i<num_procs; ++i) {
-			Factor a = queue.front();
-			queue.pop_front();
-			// convert Factor.bundles to array to send
-			char arr[a.bundles.size()][a.bundles.at(0).size()];
-			for(int i=0; i<a.bundles.size(); ++i) {
-				std::copy(a.bundles.at(i).begin(), a.bundles.at(i).end(), arr[i]);
-			}
-			MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, 0, MPI_COMM_WORLD);
-			active_procs.insert(i);
+			idle_procs.insert(i);
 		}
 
 		bool done = false;
+		auto curr = queue.begin();
 
 		while(!done) {
-			//std::cout << "manager" << std::endl;
-			// get results from any worker
-			MPI_Status status;
-			MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			int bytes_amount;
-			MPI_Get_count(&status, MPI_BYTE, &bytes_amount);
-			int symb_size = sizeof(char[start.bundles.size()][start.bundles.at(0).size()]);
-			char arr[bytes_amount/symb_size][start.bundles.at(0).size()];
-
-			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
-			active_procs.erase(status.MPI_SOURCE);
-			//std::cout<< "manager, message from: " << status.MPI_SOURCE << std::endl;
-			Factor fac(bytes_amount/symb_size, start.bundles.at(0).size());
-			for(int i=0; i<fac.bundles.size(); ++i) {
-				fac.bundles[i] = vector<char>(arr[i], arr[i] + (sizeof(arr[i])/ sizeof(arr[i][0])));
+			if(proc_locs.size() > 0) {
+				std::cout << "manager waiting on recieve." << std::endl;
+				// Receive array of bools
+				MPI_Status status;
+				bool res[chunk_size];
+				MPI_Recv(&res, sizeof(res), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				std::cout << "manager recieved work from: " << status.MPI_SOURCE << std::endl;
+				//std::cout << res[0] << std::endl;
+				// find where in the queue that process is working
+				auto curr = proc_locs[status.MPI_SOURCE];
+				std::cout << "Manager, found queue location for: " << status.MPI_SOURCE <<std::endl;
+				// for each factor, either add it to constraints, or add its next factors
+				// as determined by boolean value
+				for(int i=0; i<chunk_size; ++i){
+					if(res[i]) {
+						std::cout << "add children" << std::endl;
+						std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
+						list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
+							MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
+							queue.splice(queue.end(), next_factors);
+					} else {
+						std::cout << "add constraint" << std::endl;
+						std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
+						constraints.push_back(*curr);
+					}
+					std::cout << "queue size: " << queue.size() << std::endl;
+					curr = queue.erase(curr);
+					std::cout << "updated curr" << std::endl;
+				}
+				proc_locs.erase(proc_locs.find(status.MPI_SOURCE));
+				idle_procs.insert(status.MPI_SOURCE);
+				std::cout << "updated idle" << std::endl;
 			}
-			if(status.MPI_TAG == 0) {
-				// fac not found in positive data. add as constraint.
-				constraints.push_back(fac);
-				//std::cout << "manager, constraint: " << Display(fac, feature_order) << std::endl;
-				//if(constraints.size() > 10) done = true;
-			} else {
-				//std::cout << "manager, found: " << Display(fac, feature_order) << std::endl;
-				// found. add next factors to queue.
-				list<Factor> next_factors = fac.getNextFactors(alphabet, 
-				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
-
-				queue.splice(queue.end(), next_factors);
-			}
-
-			if(queue.empty()) {
-				if(active_procs.empty()) done = true; 
-				continue;
-			}
-
-			// send next n in queue to whatever process finished
-			Factor q = queue.front();
-			queue.pop_front();
-			while(Covers(constraints, q)) {
-				q = queue.front();
-				queue.pop_front();
-				if(queue.empty()) {
-					if(active_procs.empty()) done = true; 
+			if(queue.size() == 0) break;
+			if(curr ==  queue.end()) {
+				if(proc_locs.size() == 0) {
+					std::cout << "PROBLEM" << std::endl;
 					break;
 				}
+				continue;
 			}
+			if(queue.size() >= 3*chunk_size) {
+				std::cout << "Manager: Queue size: " << queue.size() << std::endl;
+				SendWork(constraints, chunk_size, num_procs, MAX_FACTOR_WIDTH, NUM_FEAT, 
+					queue, proc_locs, idle_procs, curr);
+			} else {			
+				// if this factor is already covered by current constraints, skip
+				std::cout << "end? " << (curr == queue.end()) << std::endl;
+				if(Covers(constraints, *curr)) {
+					std::cout << "covered, skipping" << std::endl;
+					curr = queue.erase(curr);
+					continue;
+				}
 
-			if(Covers(constraints, q)) continue;
+				// if something that matches this factor is in the positive data,
+				// get all child factors and add to queue
+				// otherwise, add to constraints
+				bool contains = Contains(positive_data[(*curr).bundles.size()], *curr);
 
-			char q_arr[q.bundles.size()][q.bundles.at(0).size()];
-			// convert Factor.bundles to array to send
-			for(int i=0; i<q.bundles.size(); ++i) {
-				std::copy(q.bundles.at(i).begin(), q.bundles.at(i).end(), q_arr[i]);
+				if(contains) {
+					std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
+					list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
+						MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
+					queue.splice(queue.end(), next_factors);
+				} else {
+					std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
+					constraints.push_back(*curr);
+				}
+				curr = queue.erase(curr);
 			}
-			//std::cout << "manager, sending: " << Display(q, feature_order) << std::endl;
-			MPI_Send(&q_arr, sizeof(q_arr), MPI_BYTE, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
-			active_procs.insert(status.MPI_SOURCE);
+			if(proc_locs.size() == 0 && queue.empty()) done = true;
 		}
 
 		// send done message to workers
 		// add enum for tags?
-		char arr[1][start.bundles.at(0).size()];
+		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
 		for(int i=0; i<num_procs; ++i){
+			std::cout << "manager sending termination signal" << std::endl;
 			MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, /*tag=*/1, MPI_COMM_WORLD);
 		}
 	} else {
 		// WORKER flow
-		bool done = false;
-		while(!done) {
-			//std::cout << "worker" << std::endl;
+		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
+		int offset = sizeof(arr[0][0]) / sizeof(arr[0][0][0]);
+		while(true) {
+			std::cout << "worker " << rank << " waiting for work." << std::endl;
 			// recieve work from manager
 			MPI_Status status;
-			MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			int bytes_amount;
-			MPI_Get_count(&status, MPI_BYTE, &bytes_amount);
-			int symb_size = sizeof(char[start.bundles.size()][start.bundles.at(0).size()]);
-			char arr[bytes_amount/symb_size][start.bundles.at(0).size()];
-
 			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			std::cout << "worker " << rank << " recieved work from manager" << std::endl;
+
 			if(status.MPI_TAG == 1) break;
 
-
-
-			// Convert bundle array back into Factor
-			Factor fac(bytes_amount/symb_size, start.bundles.at(0).size());
-			for(int i=0; i<fac.bundles.size(); ++i) {
-				fac.bundles[i] = vector<char>(arr[i], arr[i] + (sizeof(arr[i])/ sizeof(arr[i][0])));
+			bool res[chunk_size];
+			string chunks;
+			// for factor in chunk
+			for(int i=0; i<chunk_size; ++i){
+				vector<vector<char>> bundles;
+				for(int j=0; j<MAX_FACTOR_WIDTH; ++j) {
+					//std::cout << rank << ": " << arr[i][j][0] << std::endl;
+					if(arr[i][j][0] == 0) break;
+					bundles.push_back(vector<char>(arr[i][j], arr[i][j] + offset));
+				}
+				Factor fac(bundles);
+				chunks += Display(fac, feature_order) + ", ";
+				res[i] = Contains(positive_data[fac.bundles.size()], fac);
 			}
-			//std::cout << "rank: " << rank << " factor: " << fac.toString() << std::endl;
 
-			// compute result
-			if(Contains(positive_data[fac.bundles.size()], fac)) {
-				//std::cout << "rank: " << rank << " found fac: " << Display(fac, feature_order) << std::endl;
-				MPI_Send(&arr, sizeof(arr), MPI_BYTE, 0, /*tag=*/1, MPI_COMM_WORLD);
-			} else {
-				//std::cout << "rank: " << rank << " banned fac: " << Display(fac, feature_order) << std::endl;
-				MPI_Send(&arr, sizeof(arr), MPI_BYTE, 0, /*tag=*/0, MPI_COMM_WORLD);
-			}
+			// Send res back
+			std::cout << "worker " << rank << " sending result for fac: " << chunks << 
+				", " << res[0] << " " << res[1] << std::endl;
+			MPI_Send(&res, sizeof(res), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
 		}
 	}
 
 	MPI_Finalize();
   // End MPI section
+
+  // remove redundant constraints
 	// set<vector<string>> banned_ngrams;
 
 	
