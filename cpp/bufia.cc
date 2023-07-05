@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-	int chunk_size = 2;
+	int chunk_size = 20;
 
 	if(rank==0) {
 		list<Factor> queue = {start};
@@ -135,55 +135,55 @@ int main(int argc, char **argv) {
 
 		while(!done) {
 			if(proc_locs.size() > 0) {
-				std::cout << "manager waiting on recieve." << std::endl;
+				// std::cout << "manager waiting on recieve." << std::endl;
 				// Receive array of bools
 				MPI_Status status;
 				bool res[chunk_size];
 				MPI_Recv(&res, sizeof(res), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				std::cout << "manager recieved work from: " << status.MPI_SOURCE << std::endl;
+				// std::cout << "manager recieved work from: " << status.MPI_SOURCE << std::endl;
 				//std::cout << res[0] << std::endl;
 				// find where in the queue that process is working
 				auto curr = proc_locs[status.MPI_SOURCE];
-				std::cout << "Manager, found queue location for: " << status.MPI_SOURCE <<std::endl;
+				// std::cout << "Manager, found queue location for: " << status.MPI_SOURCE <<std::endl;
 				// for each factor, either add it to constraints, or add its next factors
 				// as determined by boolean value
 				for(int i=0; i<chunk_size; ++i){
 					if(res[i]) {
-						std::cout << "add children" << std::endl;
-						std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
+						// std::cout << "add children" << std::endl;
+						// std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
 						list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
 							MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
 							queue.splice(queue.end(), next_factors);
 					} else {
-						std::cout << "add constraint" << std::endl;
-						std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
+						// std::cout << "add constraint" << std::endl;
+						// std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
 						constraints.push_back(*curr);
 					}
-					std::cout << "queue size: " << queue.size() << std::endl;
+					// std::cout << "queue size: " << queue.size() << std::endl;
 					curr = queue.erase(curr);
-					std::cout << "updated curr" << std::endl;
+					// std::cout << "updated curr" << std::endl;
 				}
 				proc_locs.erase(proc_locs.find(status.MPI_SOURCE));
 				idle_procs.insert(status.MPI_SOURCE);
-				std::cout << "updated idle" << std::endl;
+				// std::cout << "updated idle" << std::endl;
 			}
 			if(queue.size() == 0) break;
 			if(curr ==  queue.end()) {
-				if(proc_locs.size() == 0) {
-					std::cout << "PROBLEM" << std::endl;
-					break;
-				}
+				// if(proc_locs.size() == 0) {
+				// 	std::cout << "PROBLEM" << std::endl;
+				// 	break;
+				// }
 				continue;
 			}
 			if(queue.size() >= 3*chunk_size) {
-				std::cout << "Manager: Queue size: " << queue.size() << std::endl;
+				// std::cout << "Manager: Queue size: " << queue.size() << std::endl;
 				SendWork(constraints, chunk_size, num_procs, MAX_FACTOR_WIDTH, NUM_FEAT, 
 					queue, proc_locs, idle_procs, curr);
 			} else {			
 				// if this factor is already covered by current constraints, skip
-				std::cout << "end? " << (curr == queue.end()) << std::endl;
+				// std::cout << "end? " << (curr == queue.end()) << std::endl;
 				if(Covers(constraints, *curr)) {
-					std::cout << "covered, skipping" << std::endl;
+					// std::cout << "covered, skipping" << std::endl;
 					curr = queue.erase(curr);
 					continue;
 				}
