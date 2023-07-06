@@ -194,12 +194,12 @@ int main(int argc, char **argv) {
 				bool contains = Contains(positive_data[(*curr).bundles.size()], *curr);
 
 				if(contains) {
-					std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
+					// std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
 					list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
 						MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
 					queue.splice(queue.end(), next_factors);
 				} else {
-					std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
+					// std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
 					constraints.push_back(*curr);
 				}
 				curr = queue.erase(curr);
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 		// add enum for tags?
 		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
 		for(int i=0; i<num_procs; ++i){
-			std::cout << "manager sending termination signal" << std::endl;
+			// std::cout << "manager sending termination signal" << std::endl;
 			MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, /*tag=*/1, MPI_COMM_WORLD);
 		}
 	} else {
@@ -219,16 +219,15 @@ int main(int argc, char **argv) {
 		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
 		int offset = sizeof(arr[0][0]) / sizeof(arr[0][0][0]);
 		while(true) {
-			std::cout << "worker " << rank << " waiting for work." << std::endl;
+			// std::cout << "worker " << rank << " waiting for work." << std::endl;
 			// recieve work from manager
 			MPI_Status status;
 			MPI_Recv(&arr, sizeof(arr), MPI_BYTE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			std::cout << "worker " << rank << " recieved work from manager" << std::endl;
+			// std::cout << "worker " << rank << " recieved work from manager" << std::endl;
 
 			if(status.MPI_TAG == 1) break;
 
 			bool res[chunk_size];
-			string chunks;
 			// for factor in chunk
 			for(int i=0; i<chunk_size; ++i){
 				vector<vector<char>> bundles;
@@ -238,13 +237,12 @@ int main(int argc, char **argv) {
 					bundles.push_back(vector<char>(arr[i][j], arr[i][j] + offset));
 				}
 				Factor fac(bundles);
-				chunks += Display(fac, feature_order) + ", ";
 				res[i] = Contains(positive_data[fac.bundles.size()], fac);
 			}
 
 			// Send res back
-			std::cout << "worker " << rank << " sending result for fac: " << chunks << 
-				", " << res[0] << " " << res[1] << std::endl;
+			// std::cout << "worker " << rank << " sending result for fac: " << chunks << 
+			// 	", " << res[0] << " " << res[1] << std::endl;
 			MPI_Send(&res, sizeof(res), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
 		}
 	}
