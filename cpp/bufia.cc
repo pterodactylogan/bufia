@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
 			if(curr ==  queue.end()) {
 				continue;
 			}
-			if(queue.size() >= 3*chunk_size) {
+			if(queue.size() >= 3*chunk_size && proc_locs.size() > 0) {
 				// std::cout << "Manager: Queue size: " << queue.size() << std::endl;
 				SendWork(constraints, chunk_size, num_procs, MAX_FACTOR_WIDTH, NUM_FEAT, 
 					queue, proc_locs, idle_procs, curr);
@@ -235,22 +235,43 @@ int main(int argc, char **argv) {
 				res[i] = Contains(positive_data[fac.bundles.size()], fac);
 			}
 
-			// Send res back
-			// std::cout << "worker " << rank << " sending result for fac: " << chunks << 
-				// ", " << res[0] << " " << res[1] << std::endl;
+			// Send result back
 			MPI_Send(&res, sizeof(res), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
 		}
 	}
 
 	MPI_Finalize();
-  // End MPI section
+ 	std::cout << "end MPI" << std::endl;
 
   // remove redundant constraints
-	// set<vector<string>> banned_ngrams;
-
+  set<vector<string>> banned_ngrams;
 	
 	for(Factor const& constraint : constraints){
-		std::cout << Display(constraint, feature_order) << std::endl;
+		vector<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, alphabet);
+		bool added_ngrams = false;
+		for(const auto& ngram : ngrams){
+			bool redundant = false;
+			// check all substrings to see if those are already banned
+			for(int i = 1; i<ngram.size(); i++){
+				if(redundant) break;
+				for(int offset = 0; offset <= ngram.size()-i; offset++){
+					// check if ngram[offset:offset+i] is in banned_ngrams
+					vector<string> slice = 
+						vector<string>(ngram.begin()+offset, ngram.begin() + offset + i);
+					if(banned_ngrams.find(slice) != banned_ngrams.end()) {
+						redundant = true;
+						break;
+					}
+				}
+			}
+			if(!redundant && banned_ngrams.insert(ngram).second == true) {
+				added_ngrams = true;
+			}
+		}
+
+		if(added_ngrams) {
+			std::cout << Display(constraint, feature_order) << std::endl;
+		}
 	}
 
 	return 0;
