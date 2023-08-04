@@ -140,7 +140,6 @@ int main(int argc, char **argv) {
 				MPI_Status status;
 				bool res[chunk_size];
 				MPI_Recv(&res, sizeof(res), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				// std::cout << "manager recieved work from: " << status.MPI_SOURCE << std::endl;
 
 				// find where in the queue that process is working
 				auto loc = proc_locs[status.MPI_SOURCE];
@@ -148,18 +147,13 @@ int main(int argc, char **argv) {
 				// as determined by boolean value
 				for(int i=0; i<chunk_size; ++i){
 					if(res[i]) {
-						// std::cout << "add children" << std::endl;
-						// std::cout << "adding children for: " << Display(*curr, feature_order) << std::endl;
 						list<Factor> next_factors = (*loc).getNextFactors(alphabet, 
 							MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
 							queue.splice(queue.end(), next_factors);
 					} else {
-						// std::cout << "add constraint" << std::endl;
-						// std::cout << "adding constraint: " << Display(*curr, feature_order) << std::endl;
-						constraints.push_back(*loc);
+							constraints.push_back(*loc);
 					}
 					loc = queue.erase(loc);
-					// std::cout << "queue size: " << queue.size() << std::endl;
 				}
 				proc_locs.erase(proc_locs.find(status.MPI_SOURCE));
 				idle_procs.insert(status.MPI_SOURCE);
@@ -221,7 +215,6 @@ int main(int argc, char **argv) {
 			if(status.MPI_TAG == 1) break;
 
 			bool res[chunk_size];
-			string chunks;
 			// for factor in chunk
 			for(int i=0; i<chunk_size; ++i){
 				vector<vector<char>> bundles;
@@ -231,7 +224,6 @@ int main(int argc, char **argv) {
 					bundles.push_back(vector<char>(arr[i][j], arr[i][j] + offset));
 				}
 				Factor fac(bundles);
-				chunks += Display(fac, feature_order) + ", ";
 				res[i] = Contains(positive_data[fac.bundles.size()], fac);
 			}
 
