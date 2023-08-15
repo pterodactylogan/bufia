@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
 	int ABDUCTIVE_PRINCIPLE = 1;
+	int MPI_CHUNK_SIZE = 1;
 
 	// STEP 1: read input flags
 	if(argc < 3) {
@@ -65,6 +66,11 @@ int main(int argc, char **argv) {
 		if(pos != string::npos){
 			ABDUCTIVE_PRINCIPLE = std::stoi(arg.substr(pos+2));
 			continue;
+		}
+
+		pos = arg.find("c=");
+		if(pos != string::npos) {
+			MPI_CHUNK_SIZE = std::stoi(arg.substr(pos+2));
 		}
 
 		if(arg.find("debug") != string::npos) {
@@ -119,8 +125,6 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-	int chunk_size = 1;
-
 	if(rank==0) {
 		list<Factor> queue = {start};
 		// MANAGER flow
@@ -138,14 +142,14 @@ int main(int argc, char **argv) {
 				// std::cout << "manager waiting on recieve." << std::endl;
 				// Receive array of bools
 				MPI_Status status;
-				bool res[chunk_size];
+				bool res[CHUNK_SIZE];
 				MPI_Recv(&res, sizeof(res), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
 				// find where in the queue that process is working
 				auto loc = proc_locs[status.MPI_SOURCE];
 				// for each factor, either add it to constraints, or add its next factors
 				// as determined by boolean value
-				for(int i=0; i<chunk_size; ++i){
+				for(int i=0; i<CHUNK_SIZE; ++i){
 					if(res[i]) {
 						list<Factor> next_factors = (*loc).getNextFactors(alphabet, 
 							MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
@@ -162,9 +166,9 @@ int main(int argc, char **argv) {
 			if(curr ==  queue.end()) {
 				continue;
 			}
-			if(queue.size() >= 3*chunk_size && proc_locs.size() > 0) {
+			if(queue.size() >= 3*CHUNK_SIZE && proc_locs.size() > 0) {
 				// std::cout << "Manager: Queue size: " << queue.size() << std::endl;
-				SendWork(constraints, chunk_size, num_procs, MAX_FACTOR_WIDTH, NUM_FEAT, 
+				SendWork(constraints, CHUNK_SIZE, num_procs, MAX_FACTOR_WIDTH, NUM_FEAT, 
 					queue, proc_locs, idle_procs, curr);
 			} else {		
 				// std::cout << "running processes: " << proc_locs.size() << std::endl;	
@@ -196,14 +200,14 @@ int main(int argc, char **argv) {
 
 		// send done message to workers
 		// add enum for tags?
-		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
+		char arr[CHUNK_SIZE][MAX_FACTOR_WIDTH][NUM_FEAT];
 		for(int i=0; i<num_procs; ++i){
 			// std::cout << "manager sending termination signal" << std::endl;
 			MPI_Send(&arr, sizeof(arr), MPI_BYTE, i, /*tag=*/1, MPI_COMM_WORLD);
 		}
 	} else {
 		// WORKER flow
-		char arr[chunk_size][MAX_FACTOR_WIDTH][NUM_FEAT];
+		char arr[CHUNK_SIZE][MAX_FACTOR_WIDTH][NUM_FEAT];
 		int offset = sizeof(arr[0][0]) / sizeof(arr[0][0][0]);
 		while(true) {
 			// std::cout << "worker " << rank << " waiting for work." << std::endl;
@@ -214,9 +218,11 @@ int main(int argc, char **argv) {
 
 			if(status.MPI_TAG == 1) break;
 
-			bool res[chunk_size];
+			bool res[CHUNK_SIZE];
+			string chunks;
+			
 			// for factor in chunk
-			for(int i=0; i<chunk_size; ++i){
+			for(int i=0; i<CHUNK_SIZE; ++i){
 				vector<vector<char>> bundles;
 				for(int j=0; j<MAX_FACTOR_WIDTH; ++j) {
 					//std::cout << rank << ": " << arr[i][j][0] << std::endl;
