@@ -119,6 +119,7 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 	string word;
 	vector<string> prev;
 	while(std::getline(*data_file, word)){
+		if(word.empty()) continue;
 		word = "# " + word + " #";
 		std::stringstream word_stream;
 		word_stream << word;

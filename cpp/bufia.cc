@@ -112,7 +112,15 @@ int main(int argc, char **argv) {
 	auto curr = queue.begin();
 
 	while(true) {
-		if(queue.size() == 0) break;
+		if(queue.empty()) break;
+
+		if(DEBUG_MODE) {
+			if(queue.size()%500 == 0 || constraints.size()%100 == 0){
+				std::cout << "queue: " << queue.size() << std::endl;
+				std::cout << "constraints: " << constraints.size() << std::endl;
+			}
+		}
+
 		if(Covers(constraints, *curr)) {
 			curr = queue.erase(curr);
 			continue;
@@ -121,9 +129,7 @@ int main(int argc, char **argv) {
 		// if something that matches this factor is in the positive data,
 		// get all child factors and add to queue
 		// otherwise, add to constraints
-		bool contains = Contains(positive_data[(*curr).bundles.size()], *curr);
-
-		if(contains) {
+		if(Contains(positive_data[(*curr).bundles.size()], *curr)) {
 			list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
 				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
 			queue.splice(queue.end(), next_factors);
@@ -162,6 +168,11 @@ int main(int argc, char **argv) {
 		if(added_ngrams) {
 			std::cout << Display(constraint, feature_order) << std::endl;
 		}
+	}
+
+	if(DEBUG_MODE) {
+		std::cout << "Total time: " << 
+		diff_timespec(nullptr, &start_time) << std::endl;
 	}
 
 	return 0;
