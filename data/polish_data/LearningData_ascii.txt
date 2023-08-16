@@ -1,0 +1,315 @@
+ts
+ts l
+ts m
+ts n
+ts v
+ts w
+ts x
+ts z
+ts zp
+b
+b j
+b l
+b r
+b r v
+b w
+b z
+b zp
+b zh
+d
+d b
+d j
+d l
+d m
+d n
+d r
+d r g
+d r v
+d r zh
+d v
+d w
+d z b
+d z v
+d np
+d zp
+d zp v
+d zh
+f
+f j
+f k
+f l
+f p
+f r
+f s
+f t
+f t s
+f t cp
+f t sh
+f x
+f cp
+f sh
+g
+g d
+g d zp
+g j j
+g l
+g m
+g n
+g r
+g v
+g w
+g z
+g np
+g zp
+g zh
+g zh b
+g zh m
+j
+j m
+k
+k ts
+k f
+k j j
+k l
+k m
+k n
+k r
+k r t
+k r v
+k s
+k t
+k t cp
+k v
+k w
+k cp
+k np
+k sh
+k sh t
+k zh
+l
+l g n
+l g np
+l j
+l n
+l v
+l cp np
+l np
+l zh
+m
+m g l
+m g w
+m j
+m k n
+m k np
+m l
+m n
+m r
+m w
+m x
+m jp
+m np
+m sh
+m zh
+n
+p
+p j
+p l
+p n
+p r
+p s
+p s t r
+p t
+p w
+p w ts
+p x
+p x l
+p x w
+p cp
+p np
+p sh
+p zh
+r
+r d z
+r j
+r t
+r v
+r zh
+s
+s ts
+s f
+s k
+s k l
+s k r
+s k w
+s k zh
+s l
+s m
+s m r
+s n
+s p
+s p l
+s p r
+s p zh
+s r
+s s
+s t
+s t r
+s t s
+s t v
+s t w
+s t cp
+s t sh
+s t zh
+s v
+s w
+s x
+s x l
+s x n
+s x r
+s x np
+s cp
+s sh
+t
+t f
+t j
+t k
+t l
+t m
+t n
+t p
+t r
+t r v
+t s f
+t s m
+t s n
+t v
+t w
+t x
+t cp m
+t np
+t sh
+t sh k
+t sh t
+t zh
+t zh m
+v
+v b
+v d
+v d zp
+v g
+v j
+v k
+v k r
+v l
+v m
+v n
+v p
+v p w
+v r
+v s k
+v s p
+v s t
+v s t r
+v s t zh
+v s x
+v t
+v v
+v w
+v z
+v z g
+v z r
+v z v
+v cp
+v np
+v sh
+v zp
+v zh
+w
+w b
+w g
+w z
+w zp
+w zh
+x
+x ts
+x f
+x j
+x l
+x m
+x r
+x t s
+x v
+x w
+x sh
+x zh
+x zh t
+z
+z b
+z b l
+z b r
+z d
+z d j
+z d r
+z d zp
+z g
+z g j
+z g l
+z g r
+z g np
+z g zh
+z j
+z l
+z m
+z m r
+z n
+z r
+z v
+z v r
+z v w
+z w
+z z
+z np
+z sh
+z zh
+cp
+cp ts
+cp f
+cp l
+cp m
+cp p
+cp r
+cp v
+cp np
+jp
+np
+sh
+sh ts
+sh f
+sh k
+sh k l
+sh k v
+sh k w
+sh l
+sh m
+sh n
+sh p
+sh p r
+sh p zh
+sh r
+sh t
+sh v
+sh w
+zp
+zp d zp b
+zp d zp b l
+zp d zp b w
+zp l
+zp r
+zh
+zh b
+zh m
+zh n
+zh v
+zh w
+zh np
+
