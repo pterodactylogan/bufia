@@ -109,28 +109,35 @@ int main(int argc, char **argv) {
 	vector<Factor> constraints;
 
 	list<Factor> queue = {start};
-	auto curr = queue.begin();
+	list<Factor> to_expand;
 
 	while(true) {
-		if(queue.size() == 0) break;
-		if(Covers(constraints, *curr)) {
-			curr = queue.erase(curr);
+		if(queue.empty()) {
+			if(to_expand.empty()) break;
+			else {
+				queue = to_expand.front().getNextFactors(alphabet,
+					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
+				to_expand.pop_front();
+			}
+		}
+		if(queue.empty()) continue;
+
+		if(Covers(constraints, queue.front())) {
+			queue.pop_front();
 			continue;
 		}
 
 		// if something that matches this factor is in the positive data,
 		// get all child factors and add to queue
 		// otherwise, add to constraints
-		bool contains = Contains(positive_data[(*curr).bundles.size()], *curr);
+		bool contains = Contains(positive_data[queue.front().bundles.size()], queue.front());
 
 		if(contains) {
-			list<Factor> next_factors = (*curr).getNextFactors(alphabet, 
-				MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
-			queue.splice(queue.end(), next_factors);
+			to_expand.push_back(queue.front());
 		} else {
-			constraints.push_back(*curr);
+			constraints.push_back(queue.front());
 		}
-		curr = queue.erase(curr);
+		queue.pop_front();
 	}
 
   // remove redundant constraints
