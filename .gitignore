@@ -18,3 +18,4 @@ cpp/Makefile
 *.log
 *.map
 *.slurm
+cpp/bufia_mpi
