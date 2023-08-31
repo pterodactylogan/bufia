@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 	list<Factor> to_expand;
 
 	while(true) {
-		if(DEBUG_MODE &
+		if(DEBUG_MODE &&
 			(queue.size() + constraints.size() + to_expand.size()) % 1000 == 0) {
 			std::cout << "queue: " << queue.size() << std::endl;
 			std::cout << "constraints: " << constraints.size() << std::endl;
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 		}
 
 		if(added_ngrams) {
-			//std::cout << Display(constraint, feature_order) << std::endl;
+			std::cout << Display(constraint, feature_order) << std::endl;
 		}
 	}
 
