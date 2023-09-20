@@ -127,8 +127,8 @@ set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 	for(int i=0; i<=word.size(); ++i) {
 		// make it a factor
 		Factor symb = MakeFactor(word, alphabet, i, i+1);
-		set<Factor> following_seq = GetSubsequences(vector(word.begin()+1, word.end()),
-			max_width-1, alphabet);
+		set<Factor> following_seq = GetSubsequences(vector<string>(word.begin()+1, 
+			word.end()), max_width-1, alphabet);
 		// concat with everything in following subsequences and add to result
 		for(const auto& seq : following_seq) {
 			Factor combo = symb;
