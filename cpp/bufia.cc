@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
 	int ABDUCTIVE_PRINCIPLE = 1;
+	// should possibly be enum
+	int ORDER = 1; // successor
 
 	// STEP 1: read input flags
 	if(argc < 3) {
@@ -62,6 +64,12 @@ int main(int argc, char **argv) {
 		pos = arg.find("a=");
 		if(pos != string::npos){
 			ABDUCTIVE_PRINCIPLE = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
+		pos = arg.find("o=");
+		if(pos !=string::npos) {
+			ORDER = std::stoi(arg.substr(pos+2));
 			continue;
 		}
 
@@ -95,7 +103,7 @@ int main(int argc, char **argv) {
 
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
-		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet);
+		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, ORDER);
 
 	if(DEBUG_MODE) {
 		std::cout << "Time loading data (ns): " << 

@@ -95,10 +95,15 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 
 // Creates a factor for the ngram represented by `symbols` vector
 // If `begin_index` is set, only that index onward will be used in the ngram
+// If `end_index` is set, only up to that index will be used in the ngram
 Factor MakeFactor(const vector<string>& symbols,
-	const unordered_map<string, Factor>& alphabet, int begin_index=0) {
+	const unordered_map<string, Factor>& alphabet, int begin_index=0,
+	int end_index=-1) {
 	vector<vector<char>> bundles;
-	for(int i=begin_index; i<symbols.size(); i++) {
+	if(end_index < 0 || end_index > symbols.size()) end_index = symbols.size();
+	if(begin_index <0) begin_index = 0;
+
+	for(int i=begin_index; i<end_index; i++) {
 		if(symbols.at(i)=="#"){
 			// Vector of same length populated only with '#' for edge marker
 			bundles.push_back(vector<char>(alphabet.begin()->second.bundles.at(0).size(), '#'));
@@ -110,28 +115,72 @@ Factor MakeFactor(const vector<string>& symbols,
 	return ret;
 }
 
+set<Factor> GetSubsequences(const vector<string>& word, int max_width,
+	const unordered_map<string, Factor>& alphabet) {
+	set<Factor> result;
+	if(max_width == 0) {
+		result.insert(Factor());
+		return result;
+	}
+
+	// for each symbol in word
+	for(int i=0; i<=word.size(); ++i) {
+		// make it a factor
+		Factor symb = MakeFactor(word, alphabet, i, i+1);
+		set<Factor> following_seq = GetSubsequences(vector(word.begin()+1, word.end()),
+			max_width-1, alphabet);
+		// concat with everything in following subsequences and add to result
+		for(const auto& seq : following_seq) {
+			Factor combo = symb;
+			combo.append(seq);
+			result.insert(combo);
+		}
+	}
+	return result;
+}
+
 unordered_map<int, vector<Factor>> 
 LoadPositiveData(std::ifstream* data_file, int max_width, 
-	const unordered_map<string, Factor>& alphabet){
+	const unordered_map<string, Factor>& alphabet, int order){
 
 	unordered_map<int, set<Factor>> data;
 
-	string word;
-	vector<string> prev;
-	while(std::getline(*data_file, word)){
-		word = "# " + word + " #";
-		std::stringstream word_stream;
-		word_stream << word;
-		string symbol;
-		while (std::getline(word_stream, symbol, ' ')){
-			prev.push_back(symbol);
-			for(int width = 1; width<=max_width; width++){
-				if(prev.size() >= width) {
-					data[width].insert(MakeFactor(prev, alphabet, prev.size()-width));
+	if(order == 1) {
+		// Successor
+		string word;
+		vector<string> prev;
+		while(std::getline(*data_file, word)){
+			word = "# " + word + " #";
+			std::stringstream word_stream;
+			word_stream << word;
+			string symbol;
+			while (std::getline(word_stream, symbol, ' ')){
+				prev.push_back(symbol);
+				for(int width = 1; width<=max_width; width++){
+					if(prev.size() >= width) {
+						data[width].insert(MakeFactor(prev, alphabet, prev.size()-width));
+					}
 				}
 			}
+			prev.clear();
 		}
-		prev.clear();
+	} else {
+		// Precedence
+		string word;
+		while(std::getline(*data_file, word)) {
+			word = "# " + word + " #";
+			std::stringstream word_stream;
+			word_stream << word;
+			string symbol;
+			vector<string> symbols;
+			while(std::getline(word_stream, symbol, ' ')){
+				symbols.push_back(symbol);
+			}
+			set<Factor> subseqs = GetSubsequences(symbols, max_width, alphabet);
+			for(const auto& seq : subseqs) {
+				data[seq.size()].insert(seq);
+			}
+		}
 	}
 
 	unordered_map<int, vector<Factor>> result;

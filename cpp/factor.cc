@@ -71,6 +71,10 @@ bool Factor::operator > (const Factor& other) const {
 	return false;
 }
 
+int Factor::size() const {
+	return bundles.size();
+}
+
 std::string Factor::toString() const {
 	std::string result = "";
 	for(const auto& bundle : bundles){
@@ -189,4 +193,10 @@ list<Factor> Factor::getNextFactors(
 		result.push_back(Factor(next_blank));
 	}
 	return result;
+}
+
+
+
+void Factor::append(const Factor& other) {
+	bundles.insert(bundles.end(), other.bundles.begin(), other.bundles.end());
 }

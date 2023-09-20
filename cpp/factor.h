@@ -29,6 +29,8 @@ public:
 
 	bool operator > (const Factor& other) const;
 
+	int size() const;
+
 	// Returns true if this Factor is a parent of `child`, false otherwise.
 	bool generates(const Factor& child) const;
 
@@ -41,6 +43,9 @@ public:
 
 	// Returns a string displaying Factor contents. For debugging.
 	std::string toString() const;
+
+	// Concat with other Factor. Do not append a factor to itself.
+	void append(const Factor& other);
 };
 
 #endif /* FACTOR_H */
