@@ -16,7 +16,7 @@ using ::std::vector;
 
 unordered_map<string, Factor> 
 LoadAlphabetFeatures(std::ifstream* feature_file, 
-	vector<string>& feature_order){
+	vector<string>& feature_order, string delim){
 
 	// find number of features
 	int num_features = -1;
@@ -32,7 +32,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 	string symbols;
 	std::getline(*feature_file, symbols);
 
-	size_t pos = symbols.find(",");
+	size_t pos = symbols.find(delim);
 	string symbol;
 	vector<string> symbol_order;
 
@@ -43,11 +43,11 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		// handle empty symbols
 		if(symbol.empty()){
 			if(symbol_order.size() > 0) {
-				std::cout << "WARNING: you have a blank entry in" 
+				std::cout << "WARNING: you have a blank entry in" << 
 				" your symbol list. This may cause unexpected behavior." << std::endl;
 			} else {
 				symbols.erase(0, pos+1);
-				pos = symbols.find(",");
+				pos = symbols.find(delim);
 				continue;
 			}
 		}
@@ -55,7 +55,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		symbol_order.push_back(symbol);
 
 		symbols.erase(0, pos+1);
-		pos = symbols.find(",");
+		pos = symbols.find(delim);
 	}
 	symbol_order.push_back(symbols);
 
@@ -64,12 +64,12 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 	string values;
 	int feature_i = 0;
 	while (std::getline(*feature_file, values)) {
-		size_t pos = values.find(",");
+		size_t pos = values.find(delim);
 		string feature_name = values.substr(0, pos);
 		feature_order.push_back(feature_name);
 		values.erase(0, pos+1);
 
-		pos = values.find(",");
+		pos = values.find(delim);
 		int i = 0;
 		string value;
 		while (i<symbol_order.size()) {
@@ -85,7 +85,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 			alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
 
 			values.erase(0, pos+1);
-			pos = values.find(",");
+			pos = values.find(delim);
 			++i;
 		}
 		++feature_i;
@@ -155,6 +155,11 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 			word_stream << word;
 			string symbol;
 			while (std::getline(word_stream, symbol, ' ')){
+				if(symbol == "") {
+					std::cout << "Your training data may not be properly formatted."
+						<< " Check for trailing spaces. Data item: " << word << std::endl;
+					continue;
+				}
 				prev.push_back(symbol);
 				for(int width = 1; width<=max_width; width++){
 					if(prev.size() >= width) {
@@ -174,6 +179,11 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 			string symbol;
 			vector<string> symbols;
 			while(std::getline(word_stream, symbol, ' ')){
+				if(symbol == "") {
+					std::cout << "Your training data may not be properly formatted."
+						<< " Check for trailing spaces. Data item: " << word << std::endl;
+					continue;
+				}
 				symbols.push_back(symbol);
 			}
 			set<Factor> subseqs = GetSubsequences(symbols, max_width, alphabet);

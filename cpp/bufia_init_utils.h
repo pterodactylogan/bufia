@@ -14,7 +14,7 @@
 // they appear in the file.
 std::unordered_map<std::string, Factor> 
 	LoadAlphabetFeatures(std::ifstream* feature_file, 
-		std::vector<std::string>& feature_order);
+		std::vector<std::string>& feature_order, std::string delim=",");
 
 // Takes a file object with positive training data, an alphabet mapping symbols
 // to corresponding factors, and max factor width to consider.

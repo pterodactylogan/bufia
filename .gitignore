@@ -19,3 +19,4 @@ cpp/Makefile
 *.map
 *.slurm
 cpp/bufia_mpi
+*.html

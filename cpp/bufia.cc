@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
 	int ABDUCTIVE_PRINCIPLE = 1;
+	string FEAT_DELIM = ",";
 	// should possibly be enum
 	int ORDER = 1; // successor
 
@@ -68,8 +69,14 @@ int main(int argc, char **argv) {
 		}
 
 		pos = arg.find("o=");
-		if(pos !=string::npos) {
+		if(pos != string::npos) {
 			ORDER = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
+		pos = arg.find("feat_delim=");
+		if(pos != string::npos) {
+			FEAT_DELIM = arg.substr(pos+11);
 			continue;
 		}
 
@@ -98,7 +105,8 @@ int main(int argc, char **argv) {
 
 	vector<string> feature_order;
 	// symbol -> width-1 Factor
-	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file, feature_order);
+	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file, 
+		feature_order, FEAT_DELIM);
 	const int NUM_FEAT = feature_order.size();
 
 	// factor width -> vector of factors
@@ -120,12 +128,12 @@ int main(int argc, char **argv) {
 	list<Factor> to_expand;
 
 	while(true) {
-		if(DEBUG_MODE &&
-			(queue.size() + constraints.size() + to_expand.size()) % 1000 == 0) {
-			std::cout << "queue: " << queue.size() << std::endl;
-			std::cout << "constraints: " << constraints.size() << std::endl;
-			std::cout << "to_expand: " << to_expand.size() << std::endl;
-		}
+		// if(DEBUG_MODE &&
+		// 	(queue.size() + constraints.size() + to_expand.size()) % 1000 == 0) {
+		// 	std::cout << "queue: " << queue.size() << std::endl;
+		// 	std::cout << "constraints: " << constraints.size() << std::endl;
+		// 	std::cout << "to_expand: " << to_expand.size() << std::endl;
+		// }
 		if(queue.empty()) {
 			if(to_expand.empty()) break;
 			else {
