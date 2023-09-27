@@ -18,7 +18,7 @@
 > import Base
 > import qualified Feature as Feature (Sys,hread,adjustSys)
 > import Struc
-> import Data.List (intercalate)
+> import Data.List (intercalate, genericLength, sort)
 > import qualified Data.Set as Set (Set,elems,filter)
 
 > type Set = Set.Set
@@ -51,6 +51,43 @@
 >              . map (eval newsys ord grm)
 >              . map words
 >              . lines) wStr
+>		; putStr "banned words: "
+>         let ord    = opt_order opts
+>             sys    = Feature.hread Nothing Nothing fStr
+>             newsys = (Feature.adjustSys (opt_f opts)) sys
+>             grm    = Struc.setHread newsys gStr
+>			in (putStrLn 
+>			 	. show 
+>				. length
+>				. filter (\(_, n, _) -> n>=1)
+>				. map (eval newsys ord grm)
+>				. map words
+>				. lines) wStr
+>		; putStr "avg violations per word: "
+>         let ord    = opt_order opts
+>             sys    = Feature.hread Nothing Nothing fStr
+>             newsys = (Feature.adjustSys (opt_f opts)) sys
+>             grm    = Struc.setHread newsys gStr
+>			in (putStrLn 
+>			 	. show 
+>				. average
+>				. map (\(_, n, _) -> n)
+>				. map (eval newsys ord grm)
+>				. map words
+>				. lines) wStr
+>		; putStr "median violations per word: "
+>         let ord    = opt_order opts
+>             sys    = Feature.hread Nothing Nothing fStr
+>             newsys = (Feature.adjustSys (opt_f opts)) sys
+>             grm    = Struc.setHread newsys gStr
+>			in (putStrLn 
+>			 	. show 
+>				. median
+>				. map realToFrac
+>				. map (\(_, n, _) -> n)
+>				. map (eval newsys ord grm)
+>				. map words
+>				. lines) wStr
 >     where printUsage = putStr $ usageInfo usageHeader options
 
 
@@ -122,3 +159,11 @@ third elementi is the list of constraints it violates.
 > showEval :: Sys -> Order -> ([String], Int, [Struc]) -> String
 > showEval sys ord (x,n,vs) = intercalate "\t" [stringify x, show n, Struc.listHshow sys vs]
 
+> average :: (Real a, Fractional b) => [a] -> b
+> average xs = realToFrac (sum xs) / genericLength xs
+
+> median :: (Ord a, Fractional a) => [a] -> a
+> median xs = if odd (length xs) then sorted !! mid
+>				else (sorted !! mid + sorted !! (mid-1))/2
+>   where sorted = sort xs
+>         mid = div (length xs) 2
