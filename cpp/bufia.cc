@@ -162,33 +162,39 @@ int main(int argc, char **argv) {
 		queue.pop_front();
 	}
 
-  // remove redundant constraints
-  set<vector<string>> banned_ngrams;
-	
-	for(Factor const& constraint : constraints){
-		vector<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, alphabet);
-		bool added_ngrams = false;
-		for(const auto& ngram : ngrams){
-			bool redundant = false;
-			// check all substrings to see if those are already banned
-			for(int i = 1; i<ngram.size(); i++){
-				if(redundant) break;
-				for(int offset = 0; offset <= ngram.size()-i; offset++){
-					// check if ngram[offset:offset+i] is in banned_ngrams
-					vector<string> slice = 
-						vector<string>(ngram.begin()+offset, ngram.begin() + offset + i);
-					if(banned_ngrams.find(slice) != banned_ngrams.end()) {
-						redundant = true;
-						break;
+	if(ABDUCTIVE_PRINCIPLE==1) {
+	  // remove redundant constraints
+	  set<vector<string>> banned_ngrams;
+		
+		for(Factor const& constraint : constraints){
+			vector<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, alphabet);
+			bool added_ngrams = false;
+			for(const auto& ngram : ngrams){
+				bool redundant = false;
+				// check all substrings to see if those are already banned
+				for(int i = 1; i<ngram.size(); i++){
+					if(redundant) break;
+					for(int offset = 0; offset <= ngram.size()-i; offset++){
+						// check if ngram[offset:offset+i] is in banned_ngrams
+						vector<string> slice = 
+							vector<string>(ngram.begin()+offset, ngram.begin() + offset + i);
+						if(banned_ngrams.find(slice) != banned_ngrams.end()) {
+							redundant = true;
+							break;
+						}
 					}
 				}
+				if(!redundant && banned_ngrams.insert(ngram).second == true) {
+					added_ngrams = true;
+				}
 			}
-			if(!redundant && banned_ngrams.insert(ngram).second == true) {
-				added_ngrams = true;
+
+			if(added_ngrams) {
+				std::cout << Display(constraint, feature_order) << std::endl;
 			}
 		}
-
-		if(added_ngrams) {
+	} else {
+		for(const auto& constraint : constraints) {
 			std::cout << Display(constraint, feature_order) << std::endl;
 		}
 	}
