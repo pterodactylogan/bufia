@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -37,7 +38,9 @@ int main(int argc, char **argv) {
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
 	int ABDUCTIVE_PRINCIPLE = 1;
+	int RANK_FEATURES = 1;
 	string FEAT_DELIM = ",";
+	bool ADD_WB = true;
 	// should possibly be enum
 	int ORDER = 1; // successor
 
@@ -74,10 +77,21 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
+		pos = arg.find("f=");
+		if(pos != string::npos) {
+			RANK_FEATURES = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
 		pos = arg.find("feat_delim=");
 		if(pos != string::npos) {
 			FEAT_DELIM = arg.substr(pos+11);
 			continue;
+		}
+
+		pos = arg.find("wb=");
+		if(pos != string::npos) {
+			std::istringstream(arg.substr(pos+3)) >> std::boolalpha >> ADD_WB;
 		}
 
 		if(arg.find("debug") != string::npos) {
@@ -104,14 +118,15 @@ int main(int argc, char **argv) {
 	if(DEBUG_MODE) clock_gettime(CLOCK_REALTIME, &start_time);
 
 	vector<string> feature_order;
+	vector<std::pair<int, char>> feature_ranks;
 	// symbol -> width-1 Factor
 	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file, 
-		feature_order, FEAT_DELIM);
+		feature_order, feature_ranks, FEAT_DELIM, ADD_WB, RANK_FEATURES);
 	const int NUM_FEAT = feature_order.size();
 
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
-		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, ORDER);
+		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, ORDER, ADD_WB);
 
 	if(DEBUG_MODE) {
 		std::cout << "Time loading data (ns): " << 
@@ -136,9 +151,13 @@ int main(int argc, char **argv) {
 		// }
 		if(queue.empty()) {
 			if(to_expand.empty()) break;
-			else {
+			else if(RANK_FEATURES){
 				queue = to_expand.front().getNextFactors(alphabet,
-					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE);
+					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, &feature_ranks);
+				to_expand.pop_front();
+			} else {
+				queue = to_expand.front().getNextFactors(alphabet,
+					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, nullptr);
 				to_expand.pop_front();
 			}
 		}

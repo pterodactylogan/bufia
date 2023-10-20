@@ -14,7 +14,9 @@
 // they appear in the file.
 std::unordered_map<std::string, Factor> 
 	LoadAlphabetFeatures(std::ifstream* feature_file, 
-		std::vector<std::string>& feature_order, std::string delim=",");
+		std::vector<std::string>& feature_order, vector<std::pair<int, char>>& feature_ranks,
+		std::string delim=",",
+		bool add_wb=true, int rank_features=1);
 
 // Takes a file object with positive training data, an alphabet mapping symbols
 // to corresponding factors, and max factor width to consider.
@@ -23,6 +25,6 @@ std::unordered_map<std::string, Factor>
 std::unordered_map<int, std::vector<Factor>> 
 	LoadPositiveData(std::ifstream* data_file, int max_width,
 	const std::unordered_map<std::string, Factor>& alphabet,
-	int order = 1);
+	int order = 1, bool add_wb=true);
 
 #endif /* BUFIA_INIT_UTILS_H */
