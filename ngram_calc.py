@@ -29,20 +29,19 @@ def get_ngrams(f_features, constraint_filename):
         new_grams = [""]
         for fac in facs:
             fac = fac.strip("[").strip("]")
-            feats = fac.split(",")
+            if fac == "":
+                feats = []
+            else:
+                feats = fac.split(",")
             segs = get_segments(feature_frame, feats)
             new_grams = [a + " " + b for a in new_grams for b in segs]
             ngrams.update(new_grams)
     return ngrams
     
 
-feature_frame = pd.read_csv("./polish_data/Features_ascii_no_boundary.csv", index_col=0).T
+feature_frame = pd.read_csv("./data/quechua/Gallagher_Gouskova/Features_wb.csv", index_col=0).T
 
-h_banned = get_ngrams(feature_frame, "./polish_data/h_k2n2.txt")
-c_banned = get_ngrams(feature_frame, "./polish_data/c_new.txt")
-extra_grams = h_banned.difference(c_banned)
-print(extra_grams)
-print(c_banned.difference(h_banned))
+get_ngrams(feature_frame, "./data/quechua/Gallagher_Gouskova/prec_grammar_k3n2.txt")
 
 ##line = "[-Voice,+LabioDental][-Sonorant,+Voice]"
 ##facs = line.split("][")

@@ -41,6 +41,7 @@
 >         fStr <- readFile (files !! 0)
 >         gStr <- readFile (files !! 1)
 >         wStr <- readFile (files !! 2)
+
 >         let ord    = opt_order opts
 >             sys    = Feature.hread Nothing Nothing fStr
 >             newsys = (Feature.adjustSys (opt_f opts)) sys
@@ -51,6 +52,7 @@
 >              . map (eval newsys ord grm)
 >              . map words
 >              . lines) wStr
+
 >		; putStr "banned words: "
 >         let ord    = opt_order opts
 >             sys    = Feature.hread Nothing Nothing fStr
