@@ -124,6 +124,8 @@ int main(int argc, char **argv) {
 		feature_order, feature_ranks, FEAT_DELIM, ADD_WB, RANK_FEATURES);
 	const int NUM_FEAT = feature_order.size();
 
+	if(DEBUG_MODE) std::cout << "Loaded Alphabet" << std::endl;
+
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
 		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, ORDER, ADD_WB);
@@ -151,7 +153,7 @@ int main(int argc, char **argv) {
 		// }
 		if(queue.empty()) {
 			if(to_expand.empty()) break;
-			else if(RANK_FEATURES){
+			else if(RANK_FEATURES == 1){
 				queue = to_expand.front().getNextFactors(alphabet,
 					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, &feature_ranks);
 				to_expand.pop_front();
