@@ -1,10 +1,10 @@
 import pandas as pd
 from factor import Factor
 
-illicit_file = "./data/quechua/Gallagher_Gouskova/eval_illicit_succ_orig.txt"
-licit_file = "./data/quechua/Gallagher_Gouskova/eval_licit_succ_orig.txt"
+illicit_file = "./data/quechua/Wilson_Gallagher/eval_illicit_dev0_prec.txt"
+licit_file = "./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt"
 
-grammar = "./data/quechua/Gallagher_Gouskova/k3n2_succ_wb.txt"
+grammar = "./data/quechua/Wilson_Gallagher/prec_grammar0.txt"
 
 with open(grammar) as f:
     constraints = [Factor(line.rstrip('\n')) for line in f]
@@ -61,8 +61,6 @@ def min_rank(row):
 total_licit = len(eval_frame_licit.index)
 total_illicit = len(eval_frame_illicit.index)
 
-print(total_licit)
-
 # drop words with no violations
 eval_frame_licit.dropna(inplace=True)
 eval_frame_illicit.dropna(inplace=True)
@@ -97,13 +95,13 @@ for i in range(len(constraints)):
         index = i
 
     if i == len(constraints)-1:
+        print("With all constraints:")
         print("p:",precision)
         print("r:", recall)
         print("f1:",f1_score)
         
     
-
-print(final_precision)
-print(final_recall)
-print(best_f1)
-print(index)
+print("Best number of constraints:", index+1)
+print("Precision:",final_precision)
+print("Recall:",final_recall)
+print("F1:",best_f1)
