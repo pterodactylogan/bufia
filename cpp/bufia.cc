@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	int ABDUCTIVE_PRINCIPLE = 1;
 	int RANK_FEATURES = 1;
 	string FEAT_DELIM = ",";
-	bool ADD_WB = true;
+	bool ADD_WB = false;
 	// should possibly be enum
 	int ORDER = 1; // successor
 
