@@ -9,12 +9,12 @@ dist-newstyle
 bufia
 *.out
 *sandbox
-*test*
 *.dyn_hi
 *.dyn_o
 cpp/bufia
 cpp/bufia_omp
 cpp/Makefile
+cpp/*test*
 *.log
 *.map
 *.slurm
