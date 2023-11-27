@@ -1,10 +1,11 @@
 #include "bufia_init_utils.h"
 
-#include <iostream>
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <set>
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 
 #include "factor.h"
@@ -177,15 +178,17 @@ set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 
 unordered_map<int, vector<Factor>> 
 LoadPositiveData(std::ifstream* data_file, int max_width, 
-	const unordered_map<string, Factor>& alphabet, int order,
+	const unordered_map<string, Factor>& alphabet, 
+	const vector<string>& tier, int order,
 	bool add_wb){
 
 	unordered_map<int, set<Factor>> data;
 
-	if(order == 1) {
-		// Successor
+	if(order == 1 || !tier.empty()) {
+		// Successor or tier projection
 		string word;
 		vector<string> prev;
+		// go through all words in file
 		while(std::getline(*data_file, word)){
 			if(add_wb) word = "# " + word + " #";
 			std::stringstream word_stream;
@@ -197,10 +200,15 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 						<< " Check for trailing spaces. Data item: " << word << std::endl;
 					continue;
 				}
-				prev.push_back(symbol);
+				// project the symbol if it is in the tier (or if no tier was given)
+				if(tier.empty() || std::find(tier.begin(), tier.end(), symbol)
+					!= tier.end()) {
+					prev.push_back(symbol);
+				}
 				for(int width = 1; width<=max_width; width++){
 					if(prev.size() >= width) {
-						data[width].insert(MakeFactor(prev, alphabet, prev.size()-width));
+						data[width].insert(MakeFactor(prev, alphabet, 
+							/*begin_index=*/prev.size()-width));
 					}
 				}
 			}

@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 	bool ADD_WB = false;
 	// should possibly be enum
 	int ORDER = 1; // successor
+	vector<string> TIER;
 
 	// STEP 1: read input flags
 	if(argc < 3) {
@@ -94,6 +95,19 @@ int main(int argc, char **argv) {
 			std::istringstream(arg.substr(pos+3)) >> std::boolalpha >> ADD_WB;
 		}
 
+		pos = arg.find("t=");
+		if(pos!= string::npos) {
+			string symbols = arg.substr(pos+2);
+			pos = 0;
+			std::string symbol;
+			while ((pos = symbols.find(",")) != std::string::npos) {
+			    symbol = symbols.substr(0, pos);
+			    TIER.push_back(symbol);
+			    symbols.erase(0, pos + 1);
+			}
+			TIER.push_back(symbols);
+		}
+
 		if(arg.find("debug") != string::npos) {
 			DEBUG_MODE = true;
 		}
@@ -128,7 +142,7 @@ int main(int argc, char **argv) {
 
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
-		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, ORDER, ADD_WB);
+		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, TIER, ORDER, ADD_WB);
 
 	if(DEBUG_MODE) {
 		std::cout << "Time loading data (ns): " << 

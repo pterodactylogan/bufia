@@ -25,6 +25,7 @@ std::unordered_map<std::string, Factor>
 std::unordered_map<int, std::vector<Factor>> 
 	LoadPositiveData(std::ifstream* data_file, int max_width,
 	const std::unordered_map<std::string, Factor>& alphabet,
+	const std::vector<std::string>& tier,
 	int order = 1, bool add_wb=true);
 
 #endif /* BUFIA_INIT_UTILS_H */
