@@ -113,6 +113,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	if(!TIER.empty() && ADD_WB) TIER.push_back("#");
+
 	string feature_filename = argv[2];
 	string data_filename = argv[1];
 	std::ifstream feature_file (feature_filename);
@@ -135,7 +137,7 @@ int main(int argc, char **argv) {
 	vector<std::pair<int, char>> feature_ranks;
 	// symbol -> width-1 Factor
 	unordered_map<string, Factor> alphabet = LoadAlphabetFeatures(&feature_file, 
-		feature_order, feature_ranks, FEAT_DELIM, ADD_WB, RANK_FEATURES);
+		feature_order, feature_ranks, FEAT_DELIM, ADD_WB, RANK_FEATURES, TIER);
 	const int NUM_FEAT = feature_order.size();
 
 	if(DEBUG_MODE) std::cout << "Loaded Alphabet" << std::endl;

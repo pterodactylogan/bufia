@@ -19,7 +19,7 @@ using ::std::vector;
 unordered_map<string, Factor> 
 LoadAlphabetFeatures(std::ifstream* feature_file, 
 	vector<string>& feature_order, vector<pair<int, char>>& feature_ranks,
-	string delim, bool add_wb, int rank_features){
+	string delim, bool add_wb, int rank_features, vector<string> tier){
 
 	bool has_wb = false;
 
@@ -84,19 +84,23 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		int neg_count = 0;
 		string value;
 		while (i<symbol_order.size()) {
-			value = values.substr(0, pos);
-			if(value != "0" && value!="+" && value !="-"){
-				std::cout << "Invalid value symbol: " << value << ". This may cause"
-				" unexpected behavior" << std::endl;
-			}
+			// add symbol to alphabet only if it is on the tier
+			if(tier.empty() || 
+				std::find(tier.begin(), tier.end(), symbol_order[i]) != tier.end()) {
+				value = values.substr(0, pos);
+				if(value != "0" && value!="+" && value !="-"){
+					std::cout << "Invalid value symbol: " << value << ". This may cause"
+					" unexpected behavior" << std::endl;
+				}
 
-			if (alphabet.find(symbol_order[i]) == alphabet.end()) {
-				alphabet[symbol_order[i]] = Factor(1, num_features);
-			}
-			alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
+				if (alphabet.find(symbol_order[i]) == alphabet.end()) {
+					alphabet[symbol_order[i]] = Factor(1, num_features);
+				}
+				alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
 
-			if(value[0] == '+') ++pos_count;
-			if(value[0] == '-') ++neg_count;
+				if(value[0] == '+') ++pos_count;
+				if(value[0] == '-') ++neg_count;
+			}
  
 			values.erase(0, pos+1);
 			pos = values.find(delim);
@@ -108,8 +112,8 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 	}
 	if(!has_wb && add_wb) {
 		// fill in -wb for all symbols
-		for (int i=0; i<symbol_order.size(); ++i) {
-			alphabet[symbol_order[i]].bundles.at(0)[feature_i] = '-';
+		for (const auto& entry : alphabet) {
+			alphabet[entry.first].bundles.at(0)[feature_i] = '-';
 		}
 
 		// add wb to feature order
