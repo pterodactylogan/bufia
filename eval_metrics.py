@@ -1,10 +1,10 @@
 import pandas as pd
 from factor import Factor
 
-illicit_file = "./data/quechua/Wilson_Gallagher/eval_illicit_dev0_prec.txt"
-licit_file = "./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt"
+illicit_file = "./data/quechua/Wilson_Gallagher/eval_illicit_dev0_succ.txt"
+licit_file = "./data/quechua/Wilson_Gallagher/eval_licit_dev0_succ.txt"
 
-grammar = "./data/quechua/Wilson_Gallagher/prec_grammar0.txt"
+grammar = "./data/quechua/Wilson_Gallagher/succ_grammar0.txt"
 
 with open(grammar) as f:
     constraints = [Factor(line.rstrip('\n')) for line in f]

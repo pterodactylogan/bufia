@@ -22,7 +22,7 @@ class Factor:
             result += "["
             for feat in bundle:
                 result += feat + ","
-            result = result[:-1]
+            result = result.strip(",")
             result+="]"
         return result
 
