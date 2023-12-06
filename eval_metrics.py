@@ -75,6 +75,8 @@ best_f1 = 0
 final_precision = 0
 final_recall = 0
 index = -1
+fin_banned_licit = 0
+fin_banned_illicit = 0
 for i in range(len(constraints)):
     licit_banned = eval_frame_licit[eval_frame_licit["min_rank"] < i]
     illicit_banned = eval_frame_illicit[eval_frame_illicit["min_rank"] < i]
@@ -93,6 +95,8 @@ for i in range(len(constraints)):
         final_precision = precision
         final_recall = recall
         index = i
+        fin_banned_licit = nbanned_licit
+        fin_banned_illicit = nbanned_illicit
 
     if i == len(constraints)-1:
         print("With all constraints:")
@@ -105,3 +109,5 @@ print("Best number of constraints:", index+1)
 print("Precision:",final_precision)
 print("Recall:",final_recall)
 print("F1:",best_f1)
+print("banned illicit:", fin_banned_illicit, "/", total_illicit)
+print("banned licit:", fin_banned_licit, "/", total_licit)
