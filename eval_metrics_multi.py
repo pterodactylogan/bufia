@@ -10,6 +10,16 @@ def has_violation(row, num_evals):
         print(row)
     return False
 
+def has_covered_violation(row, constraints):
+    try:
+        for i in range(len(constraints)):
+            constraint_vals = row["r" + str(i)].split(";")
+            if constraints[i] <= int(constraint_vals[0]):
+                return True
+    except:
+        print(row)
+    return False
+
 '''
 constraint: string representation of a constraint, eg "[+a][-b][+a,-b]"
 returns the distance from the empty factor (7 for this example)
@@ -41,6 +51,8 @@ def min_d(row, num_evals):
             min_d = d
     return min_d
 
+# Each file in licit_evals should correspond to a file in illicit_evals
+# at the SAME INDEX
 licit_evals = [
     "./data/quechua/Wilson_Gallagher/eval_licit_dev0_succ.txt",
                #"./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt",
@@ -103,35 +115,38 @@ all_illicit["min_d"] = all_illicit.apply((lambda x:
 licit_banned = all_licit[all_licit["banned"]]
 illicit_banned = all_illicit[all_illicit["banned"]]
 
-best_f1 = 0
-final_precision = 0
-final_recall = 0
-best_d = 0
-best_banned_licit = 0
-best_banned_illicit = 0
-for i in range(1, 10):
-    # remove everything longer
-    licit_banned_d = licit_banned[licit_banned["min_d"] <= i]
-    illicit_banned_d = illicit_banned[illicit_banned["min_d"] <= i]
-    
-    # calc metrics
-    nbanned_licit = len(licit_banned_d.index)
-    nallowed_licit = total_licit - nbanned_licit
-    nbanned_illicit = len(illicit_banned_d.index)
-    nallowed_illicit = total_illicit - nbanned_illicit
+f1 = 0
+constraints = [0 for i in range(len(licit_evals))]
+while True
+    best_i = -1
+    new_f1 = f1
+    for i in range(len(constraints))
+        new_constraints = constraints
+        new constraints[i] += 1
+        updated_licit["violation"] = all_licit.apply((lambda x:
+                                        has_covered_violation(x, new_constraints)),
+                                        axis=1)
+        updated_licit = updated_licit[updated_licit["violation"]]
+        updated_illicit["violation"] = all_illicit.apply((lambda x:
+                                        has_covered_violation(x, new_constraints)),
+                                        axis=1)
+        updated_illicit = updated_illicit[updated_illicit["violation"]]
+        # calculate f1
+        nbanned_licit = len(updated_licit.index)
+        nallowed_licit = total_licit - nbanned_licit
+        nbanned_illicit = len(updated_illicit.index)
+        nallowed_illicit = total_illicit - nbanned_illicit
 
-    # get precision, recall, and f1 score
-    precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
-    recall = nallowed_licit / total_licit
-    f1_score = 2 / ((1/precision) + (1/recall))
-
-    if f1_score > best_f1:
-        best_f1 = f1_score
-        final_precision = precision
-        final_recall = recall
-        best_d = i
-        best_banned_licit = nbanned_licit
-        best_banned_illicit = nbanned_illicit
+        # get precision, recall, and f1 score
+        precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
+        recall = nallowed_licit / total_licit
+        f1_score = 2 / ((1/precision) + (1/recall))
+        if f1_score > new_f1:
+            best_i = i
+            new_f1  = f1_score
+    if best_i == -1: break
+    constraints[best_i] += 1
+    f1 = new_f1
 
 nbanned_licit = len(licit_banned.index)
 nallowed_licit = total_licit - nbanned_licit
@@ -150,10 +165,6 @@ print("f1:",f1_score)
 print("banned illicit:", nbanned_illicit, "/", total_illicit)
 print("banned licit:", nbanned_licit, "/", total_licit)
 
-print("With best distance:")
-print("d:", best_d)
-print("p:",final_precision)
-print("r:", final_recall)
-print("f1:",best_f1)
-print("banned illicit:", best_banned_illicit, "/", total_illicit)
-print("banned licit:", best_banned_licit, "/", total_licit)
+print("With best constraints:")
+print("f1:", f1)
+print(constraints)

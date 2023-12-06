@@ -3,16 +3,17 @@ from factor import Factor
 
 grammar = open("./data/quechua/Wilson_Gallagher/tiers/c-dorsal/c-dorsal_grammar.txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/dev/illicit_dev0.txt")
+test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/dev/licit_dev0.txt")
 
 #dorsal
 #tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a"]
-#c-dorsal
-tier = ["k", "g", "K", "q", "G", "Q", "@"]
 
 #Laryngeal
-#tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
- #       "K", "Q", "h", "V", "@"]
+##tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
+##        "K", "Q", "h", "V", "@"]
+
+# C-Dorsal
+tier = ["k", "g", "K", "q", "G", "Q", "@"]
 
 feature_frame = pd.read_csv(features, index_col=0)
 feature_frame = feature_frame.astype(str)
@@ -39,10 +40,16 @@ for line in test.readlines():
     
     # get all constraints violated by word
     violated = []
-    for fac in banned_facs:
-        if fac.generates(word_fac):
-            violated.append(fac)
-    print(line.strip(), len(violated), ";".join([str(x) for x in violated]), sep="\t")
+    violated_indices = []
+    for i in range(len(banned_facs)):
+        if banned_facs[i].generates(word_fac):
+            violated.append(banned_facs[i])
+            violated_indices.append(i)
+    print(line.strip(),
+          len(violated),
+          ";".join([str(x) for x in violated]),
+          ";".join([str(x+1) for x in violated_indices]),
+          sep="\t")
 
 
 grammar.close()
