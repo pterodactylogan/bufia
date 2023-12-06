@@ -11,13 +11,12 @@ def has_violation(row, num_evals):
     return False
 
 def has_covered_violation(row, constraints):
-    try:
-        for i in range(len(constraints)):
-            constraint_vals = row["r" + str(i)].split(";")
-            if constraints[i] <= int(constraint_vals[0]):
-                return True
-    except:
-        print(row)
+    for i in range(len(constraints)):
+        constraint_vals = row["r" + str(i)]
+        if constraint_vals == "":
+            return False
+        if constraints[i] <= int(constraint_vals.split(";")[0]):
+            return True
     return False
 
 '''
@@ -54,16 +53,16 @@ def min_d(row, num_evals):
 # Each file in licit_evals should correspond to a file in illicit_evals
 # at the SAME INDEX
 licit_evals = [
-    "./data/quechua/Wilson_Gallagher/eval_licit_dev0_succ.txt",
+    "./data/quechua/Wilson_Gallagher/eval_licit_succ.txt",
                #"./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt",
-##               "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_licit.txt",
+               "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_licit.txt",
 ##               "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_licit.txt",
 ##               "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_licit.txt"
     ]
 illicit_evals = [
-    "./data/quechua/Wilson_Gallagher/eval_illicit_dev0_succ.txt",
+    "./data/quechua/Wilson_Gallagher/eval_illicit_succ.txt",
     #"./data/quechua/Wilson_Gallagher/eval_illicit_dev0_prec.txt",
-##    "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_illicit.txt",
 ##    "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_illicit.txt",
 ##    "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_illicit.txt"
     ]
@@ -74,7 +73,8 @@ for filename in licit_evals:
     licit_frames.append(pd.read_csv(filename, sep="\t",
                                     names=["word",
                                            "v" + str(i),
-                                           "c" + str(i)]))
+                                           "c" + str(i),
+                                           "r" + str(i)]))
     i += 1
 
 illicit_frames = []
@@ -83,7 +83,8 @@ for filename in illicit_evals:
     illicit_frames.append(pd.read_csv(filename, sep="\t",
                                     names=["word",
                                            "v" + str(i),
-                                           "c" + str(i)]))
+                                           "c" + str(i),
+                                           "r" + str(i)]))
     i += 1
 
 
@@ -117,24 +118,23 @@ illicit_banned = all_illicit[all_illicit["banned"]]
 
 f1 = 0
 constraints = [0 for i in range(len(licit_evals))]
-while True
+while True:
     best_i = -1
     new_f1 = f1
-    for i in range(len(constraints))
+    for i in range(len(constraints)):
         new_constraints = constraints
-        new constraints[i] += 1
-        updated_licit["violation"] = all_licit.apply((lambda x:
+        new_constraints[i] += 1
+        updated_licit = all_licit.apply((lambda x:
                                         has_covered_violation(x, new_constraints)),
                                         axis=1)
-        updated_licit = updated_licit[updated_licit["violation"]]
-        updated_illicit["violation"] = all_illicit.apply((lambda x:
+        updated_illicit = all_illicit.apply((lambda x:
                                         has_covered_violation(x, new_constraints)),
                                         axis=1)
-        updated_illicit = updated_illicit[updated_illicit["violation"]]
         # calculate f1
-        nbanned_licit = len(updated_licit.index)
+        nbanned_licit = len(updated_licit[updated_licit].index)
+        print(nbanned_licit)
         nallowed_licit = total_licit - nbanned_licit
-        nbanned_illicit = len(updated_illicit.index)
+        nbanned_illicit = len(updated_illicit[updated_illicit].index)
         nallowed_illicit = total_illicit - nbanned_illicit
 
         # get precision, recall, and f1 score
