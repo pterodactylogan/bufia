@@ -1,8 +1,8 @@
 import pandas as pd
 from factor import Factor
 
-illicit_file = "./data/quechua/Wilson_Gallagher/eval_illicit_dev0_succ.txt"
-licit_file = "./data/quechua/Wilson_Gallagher/eval_licit_dev0_succ.txt"
+illicit_file = "./data/quechua/Wilson_Gallagher/eval_illicit_succ.txt"
+licit_file = "./data/quechua/Wilson_Gallagher/eval_licit_succ.txt"
 
 grammar = "./data/quechua/Wilson_Gallagher/succ_grammar0.txt"
 
@@ -10,10 +10,10 @@ with open(grammar) as f:
     constraints = [Factor(line.rstrip('\n')) for line in f]
 
 eval_frame_licit = pd.read_csv(licit_file, sep = "\t",
-                              names=["word", "violations", "constraints"])
+                              names=["word", "violations", "constraints", "ranks"])
 
 eval_frame_illicit = pd.read_csv(illicit_file, sep = "\t",
-                              names=["word", "violations", "constraints"])
+                              names=["word", "violations", "constraints", "ranks"])
 
 
 '''

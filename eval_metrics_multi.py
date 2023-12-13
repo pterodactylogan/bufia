@@ -11,13 +11,15 @@ def has_violation(row, num_evals):
     return False
 
 def has_covered_violation(row, constraints):
-    for i in range(len(constraints)):
-        constraint_vals = row["r" + str(i)]
-        if constraint_vals == "":
-            return False
-        if constraints[i] <= int(constraint_vals.split(";")[0]):
-            return True
-    return False
+    #try:
+        for i in range(len(constraints)):
+            constraint_vals = row["r" + str(i)]
+            if constraint_vals == "":
+                continue
+            if constraints[i] >= int(constraint_vals.split(";")[0]):
+                #print("rank:",constraint_vals.split(";")[0])
+                return True
+        return False
 
 '''
 constraint: string representation of a constraint, eg "[+a][-b][+a,-b]"
@@ -56,35 +58,60 @@ licit_evals = [
     "./data/quechua/Wilson_Gallagher/eval_licit_succ.txt",
                #"./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt",
                "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_licit.txt",
-##               "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_licit.txt",
-##               "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_licit.txt"
+               "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_licit.txt",
+               "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_licit.txt"
     ]
 illicit_evals = [
     "./data/quechua/Wilson_Gallagher/eval_illicit_succ.txt",
     #"./data/quechua/Wilson_Gallagher/eval_illicit_dev0_prec.txt",
     "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_illicit.txt",
-##    "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_illicit.txt",
-##    "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_illicit.txt"
+    "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_illicit.txt"
     ]
+
+grammar_sizes = [
+    833, # successor
+    # precedence
+    14, # c-dorsal
+    38, # dorsal
+    89 # laryngeal
+    ]
+
+if len(licit_evals) != len(illicit_evals):
+    print("no")
+    quit
+if len(licit_evals) != len(grammar_sizes):
+    print("no!!!")
+    quit
 
 licit_frames = []
 i=0
 for filename in licit_evals:
     licit_frames.append(pd.read_csv(filename, sep="\t",
-                                    names=["word",
+                                    names=["word" + str(i),
                                            "v" + str(i),
                                            "c" + str(i),
-                                           "r" + str(i)]))
+                                           "r" + str(i)],
+                                    dtype={"word" + str(i): str,
+                                           "v" + str(i): int,
+                                           "c" + str(i): str,
+                                           "r" + str(i): str,
+                                           }))
     i += 1
 
 illicit_frames = []
 i=0
 for filename in illicit_evals:
     illicit_frames.append(pd.read_csv(filename, sep="\t",
-                                    names=["word",
+                                    names=["word" + str(i),
                                            "v" + str(i),
                                            "c" + str(i),
-                                           "r" + str(i)]))
+                                           "r" + str(i)],
+                                      dtype={"word" + str(i): str,
+                                           "v" + str(i): int,
+                                           "c" + str(i): str,
+                                           "r" + str(i): str
+                                             }))
     i += 1
 
 
@@ -117,12 +144,18 @@ licit_banned = all_licit[all_licit["banned"]]
 illicit_banned = all_illicit[all_illicit["banned"]]
 
 f1 = 0
-constraints = [0 for i in range(len(licit_evals))]
+constraints = [60, 14, 38, 89]#[0 for i in range(len(grammar_sizes))]
+fin_licit_banned = 0
+fin_illicit_banned = 0
+
 while True:
+    print(constraints)
+    print(f1)
     best_i = -1
     new_f1 = f1
+    indices_to_increment = []
     for i in range(len(constraints)):
-        new_constraints = constraints
+        new_constraints = constraints.copy()
         new_constraints[i] += 1
         updated_licit = all_licit.apply((lambda x:
                                         has_covered_violation(x, new_constraints)),
@@ -132,7 +165,6 @@ while True:
                                         axis=1)
         # calculate f1
         nbanned_licit = len(updated_licit[updated_licit].index)
-        print(nbanned_licit)
         nallowed_licit = total_licit - nbanned_licit
         nbanned_illicit = len(updated_illicit[updated_illicit].index)
         nallowed_illicit = total_illicit - nbanned_illicit
@@ -141,11 +173,19 @@ while True:
         precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
         recall = nallowed_licit / total_licit
         f1_score = 2 / ((1/precision) + (1/recall))
+
+            
+        if f1_score == new_f1 and constraints[i] < grammar_sizes[i]:
+            indices_to_increment.append(i)
         if f1_score > new_f1:
-            best_i = i
+            indices_to_increment = [i]
             new_f1  = f1_score
-    if best_i == -1: break
-    constraints[best_i] += 1
+            fin_licit_banned = nbanned_licit
+            fin_illicit_banned = nbanned_illicit
+    if len(indices_to_increment) == 0: break
+    
+    for index in indices_to_increment:
+        constraints[index] += 1
     f1 = new_f1
 
 nbanned_licit = len(licit_banned.index)
@@ -167,4 +207,6 @@ print("banned licit:", nbanned_licit, "/", total_licit)
 
 print("With best constraints:")
 print("f1:", f1)
+print("banned illicit:", fin_illicit_banned, "/", total_illicit)
+print("banned licit:", fin_licit_banned, "/", total_licit)
 print(constraints)
