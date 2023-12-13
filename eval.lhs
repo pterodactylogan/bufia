@@ -53,43 +53,44 @@
 >              . map words
 >              . lines) wStr
 
->		; putStr "banned words: "
->         let ord    = opt_order opts
->             sys    = Feature.hread Nothing Nothing fStr
->             newsys = (Feature.adjustSys (opt_f opts)) sys
->             grm    = Struc.setHread newsys gStr
->			in (putStrLn 
->			 	. show 
->				. length
->				. filter (\(_, n, _) -> n>=1)
->				. map (eval newsys ord grm)
->				. map words
->				. lines) wStr
->		; putStr "avg violations per word: "
->         let ord    = opt_order opts
->             sys    = Feature.hread Nothing Nothing fStr
->             newsys = (Feature.adjustSys (opt_f opts)) sys
->             grm    = Struc.setHread newsys gStr
->			in (putStrLn 
->			 	. show 
->				. average
->				. map (\(_, n, _) -> n)
->				. map (eval newsys ord grm)
->				. map words
->				. lines) wStr
->		; putStr "median violations per word: "
->         let ord    = opt_order opts
->             sys    = Feature.hread Nothing Nothing fStr
->             newsys = (Feature.adjustSys (opt_f opts)) sys
->             grm    = Struc.setHread newsys gStr
->			in (putStrLn 
->			 	. show 
->				. median
->				. map realToFrac
->				. map (\(_, n, _) -> n)
->				. map (eval newsys ord grm)
->				. map words
->				. lines) wStr
+-- >		; putStr "banned words: "
+-- >         let ord    = opt_order opts
+-- >             sys    = Feature.hread Nothing Nothing fStr
+-- >             newsys = (Feature.adjustSys (opt_f opts)) sys
+-- >             grm    = Struc.setHread newsys gStr
+-- >			in (putStrLn 
+-- >			 	. show 
+-- >				. length
+-- >				. filter (\(_, n, _) -> n>=1)
+-- >				. map (eval newsys ord grm)
+-- >				. map words
+-- >				. lines) wStr
+-- >		; putStr "avg violations per word: "
+-- >         let ord    = opt_order opts
+-- >             sys    = Feature.hread Nothing Nothing fStr
+-- >             newsys = (Feature.adjustSys (opt_f opts)) sys
+-- >             grm    = Struc.setHread newsys gStr
+-- >			in (putStrLn 
+-- >			 	. show 
+-- >				. average
+-- >				. map (\(_, n, _) -> n)
+-- >				. map (eval newsys ord grm)
+-- >				. map words
+-- >				. lines) wStr
+-- >		; putStr "median violations per word: "
+-- >         let ord    = opt_order opts
+-- >             sys    = Feature.hread Nothing Nothing fStr
+-- >             newsys = (Feature.adjustSys (opt_f opts)) sys
+-- >             grm    = Struc.setHread newsys gStr
+-- >			in (putStrLn 
+-- >			 	. show 
+-- >				. median
+-- >				. map realToFrac
+-- >				. map (\(_, n, _) -> n)
+-- >				. map (eval newsys ord grm)
+-- >				. map words
+-- >				. lines) wStr
+
 >     where printUsage = putStr $ usageInfo usageHeader options
 
 

@@ -136,11 +136,13 @@ bool Factor::generates(const Factor& child) const {
 
 list<Factor> Factor::getNextFactors(
 	const unordered_map<std::string, Factor>& alphabet, 
-	int max_width, int max_features) const {
-	if(bundles[0][0]=='#' || bundles[bundles.size()-1][0] == '#') return {};
+	int max_width, int max_features,
+	vector<std::pair<int, char>>* feature_ranks) const {
 
 	list<Factor> result;
 	int last = bundles.size()-1;
+
+
 	int i = bundles[last].size()-1;
 	int unset_index = 0;
 	int num_features = 0;
@@ -152,46 +154,66 @@ list<Factor> Factor::getNextFactors(
 		--i;
 	}
 
-	if(num_features < max_features) {
-		for(; unset_index<bundles[last].size(); unset_index++){
-			vector<vector<char>> next_pos = bundles;
-			next_pos[last][unset_index] = '+';
+	if(feature_ranks ==nullptr) {
+		if(num_features < max_features) {
+			for(; unset_index<bundles[last].size(); unset_index++){
+				vector<vector<char>> next_pos = bundles;
+				next_pos[last][unset_index] = '+';
 
-			// check if last bundle generates anything in alphabet
-			Factor final({next_pos[last]});
-			for(const auto& pair : alphabet){
-				if(final.generates(pair.second)){
-					result.push_back(Factor(next_pos));
-					break;
+				// check if last bundle generates anything in alphabet
+				Factor final({next_pos[last]});
+				for(const auto& pair : alphabet){
+					if(final.generates(pair.second)){
+						result.push_back(Factor(next_pos));
+						break;
+					}
+				}
+
+				vector<vector<char>> next_neg = bundles;
+				next_neg[last][unset_index] = '-';
+				final = Factor({next_neg[last]});
+				for(const auto& pair : alphabet){
+					if(final.generates(pair.second)){
+						result.push_back(Factor(next_neg));
+						break;
+					}
 				}
 			}
+		}
+	} else {
+		if(num_features < max_features) {
+			for(int i = feature_ranks->size()-1; i>=0; --i) {
 
-			vector<vector<char>> next_neg = bundles;
-			next_neg[last][unset_index] = '-';
-			final = Factor({next_neg[last]});
-			for(const auto& pair : alphabet){
-				if(final.generates(pair.second)){
-					result.push_back(Factor(next_neg));
-					break;
+				// pair of index, value to represent an element like -son
+				std::pair<int, char> feat_pair = feature_ranks->at(i);
+
+				// if index is occupied by value, break
+				if(bundles[last][i] == feat_pair.second) break;
+
+				// otherwise add elem (if opposite elem is not present)
+				if(bundles[last][feature_ranks->at(i).first] == '*') {
+					vector<vector<char>> next = bundles;
+					next[last][feature_ranks->at(i).first] = feat_pair.second;
+
+					// check if last bundle generates anything in alphabet
+					Factor final({next[last]});
+					for(const auto& pair : alphabet){
+						if(final.generates(pair.second)){
+							result.push_front(Factor(next));
+							break;
+						}
+					}
 				}
 			}
 		}
 	}
 
 	if(bundles.size() < max_width) {
-		vector<vector<char>> next_begin;
-		next_begin.push_back(vector<char>(bundles[last].size(), '#'));
-		next_begin.insert(next_begin.end(), bundles.begin(), bundles.end());
-		result.push_back(Factor(next_begin));
-
-		vector<vector<char>> next_end = bundles;
-		next_end.push_back(vector<char>(bundles[last].size(), '#'));
-		result.push_back(Factor(next_end));
-
 		vector<vector<char>> next_blank = bundles;
 		next_blank.push_back(vector<char>(bundles[last].size(), '*'));
 		result.push_back(Factor(next_blank));
 	}
+
 	return result;
 }
 

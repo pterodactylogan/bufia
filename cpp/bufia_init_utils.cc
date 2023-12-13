@@ -1,14 +1,16 @@
 #include "bufia_init_utils.h"
 
-#include <iostream>
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <set>
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 
 #include "factor.h"
 
+using ::std::pair;
 using ::std::string;
 using ::std::set;
 using ::std::unordered_map;
@@ -16,7 +18,10 @@ using ::std::vector;
 
 unordered_map<string, Factor> 
 LoadAlphabetFeatures(std::ifstream* feature_file, 
-	vector<string>& feature_order, string delim){
+	vector<string>& feature_order, vector<pair<int, char>>& feature_ranks,
+	string delim, bool add_wb, int rank_features, vector<string> tier){
+
+	bool has_wb = false;
 
 	// find number of features
 	int num_features = -1;
@@ -39,6 +44,7 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 	// push each new symbol into symbol_order vector
 	while (pos != string::npos) {
 		symbol = symbols.substr(0, pos);
+		if(symbol == "#") has_wb = true;
 		
 		// handle empty symbols
 		if(symbol.empty()){
@@ -57,12 +63,15 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 		symbols.erase(0, pos+1);
 		pos = symbols.find(delim);
 	}
+	if(!has_wb && add_wb) ++num_features;
 	symbol_order.push_back(symbols);
 
 	// go through rest of lines, fill in map of symbols to Factors
 	unordered_map<string, Factor> alphabet;
 	string values;
 	int feature_i = 0;
+	feature_order = vector<string>();
+	std::set<pair<int, pair<int, char>>> feature_set;
 	while (std::getline(*feature_file, values)) {
 		size_t pos = values.find(delim);
 		string feature_name = values.substr(0, pos);
@@ -71,25 +80,62 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 
 		pos = values.find(delim);
 		int i = 0;
+		int pos_count = 0;
+		int neg_count = 0;
 		string value;
 		while (i<symbol_order.size()) {
-			value = values.substr(0, pos);
-			if(value != "0" && value!="+" && value !="-"){
-				std::cout << "Invalid value symbol: " << value << ". This may cause"
-				" unexpected behavior" << std::endl;
-			}
+			// add symbol to alphabet only if it is on the tier
+			if(tier.empty() || 
+				std::find(tier.begin(), tier.end(), symbol_order[i]) != tier.end()) {
+				value = values.substr(0, pos);
+				if(value != "0" && value!="+" && value !="-"){
+					std::cout << "Invalid value symbol: " << value << ". This may cause"
+					" unexpected behavior" << std::endl;
+				}
 
-			if (alphabet.find(symbol_order[i]) == alphabet.end()) {
-				alphabet[symbol_order[i]] = Factor(1, num_features);
-			}
-			alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
+				if (alphabet.find(symbol_order[i]) == alphabet.end()) {
+					alphabet[symbol_order[i]] = Factor(1, num_features);
+				}
+				alphabet[symbol_order[i]].bundles.at(0)[feature_i] = value[0];
 
+				if(value[0] == '+') ++pos_count;
+				if(value[0] == '-') ++neg_count;
+			}
+ 
 			values.erase(0, pos+1);
 			pos = values.find(delim);
 			++i;
 		}
+		feature_set.insert({pos_count, {feature_i, '+'}});
+		feature_set.insert({neg_count, {feature_i, '-'}});
 		++feature_i;
 	}
+	if(!has_wb && add_wb) {
+		// fill in -wb for all symbols
+		for (const auto& entry : alphabet) {
+			alphabet[entry.first].bundles.at(0)[feature_i] = '-';
+		}
+
+		// add wb to feature order
+		feature_order.push_back("wb");
+
+		// add "#" to alphabet
+		vector<char> wb(num_features, '0');
+		wb[feature_i] = '+';
+		alphabet["#"] = Factor({wb});
+
+		feature_set.insert({1, {feature_i, '+'}});
+		feature_set.insert({symbol_order.size(), {feature_i, '-'}});
+	}
+
+	if(rank_features) {
+		feature_ranks = vector<pair<int, char>>();
+		for(const auto& count : feature_set) {
+			feature_ranks.insert(feature_ranks.begin(),
+				std::make_pair(count.second.first, count.second.second));
+		}
+	}
+
 	return alphabet;
 }
 
@@ -104,12 +150,7 @@ Factor MakeFactor(const vector<string>& symbols,
 	if(begin_index <0) begin_index = 0;
 
 	for(int i=begin_index; i<end_index; i++) {
-		if(symbols.at(i)=="#"){
-			// Vector of same length populated only with '#' for edge marker
-			bundles.push_back(vector<char>(alphabet.begin()->second.bundles.at(0).size(), '#'));
-		} else {
-			bundles.push_back(vector<char>(alphabet.at(symbols.at(i)).bundles[0]));
-		}
+		bundles.push_back(vector<char>(alphabet.at(symbols.at(i)).bundles[0]));
 	}
 	Factor ret(bundles);
 	return ret;
@@ -141,16 +182,19 @@ set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 
 unordered_map<int, vector<Factor>> 
 LoadPositiveData(std::ifstream* data_file, int max_width, 
-	const unordered_map<string, Factor>& alphabet, int order){
+	const unordered_map<string, Factor>& alphabet, 
+	const vector<string>& tier, int order,
+	bool add_wb){
 
 	unordered_map<int, set<Factor>> data;
 
-	if(order == 1) {
-		// Successor
+	if(order == 1 || !tier.empty()) {
+		// Successor or tier projection
 		string word;
 		vector<string> prev;
+		// go through all words in file
 		while(std::getline(*data_file, word)){
-			word = "# " + word + " #";
+			if(add_wb) word = "# " + word + " #";
 			std::stringstream word_stream;
 			word_stream << word;
 			string symbol;
@@ -160,10 +204,15 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 						<< " Check for trailing spaces. Data item: " << word << std::endl;
 					continue;
 				}
-				prev.push_back(symbol);
+				// project the symbol if it is in the tier (or if no tier was given)
+				if(tier.empty() || std::find(tier.begin(), tier.end(), symbol)
+					!= tier.end()) {
+					prev.push_back(symbol);
+				}
 				for(int width = 1; width<=max_width; width++){
 					if(prev.size() >= width) {
-						data[width].insert(MakeFactor(prev, alphabet, prev.size()-width));
+						data[width].insert(MakeFactor(prev, alphabet, 
+							/*begin_index=*/prev.size()-width));
 					}
 				}
 			}
@@ -173,7 +222,7 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 		// Precedence
 		string word;
 		while(std::getline(*data_file, word)) {
-			word = "# " + word + " #";
+			if(add_wb) word = "# " + word + " #";
 			std::stringstream word_stream;
 			word_stream << word;
 			string symbol;
@@ -194,8 +243,8 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 	}
 
 	unordered_map<int, vector<Factor>> result;
-	for(const auto& pair : data){
-		result[pair.first] = vector<Factor>(pair.second.begin(), pair.second.end());
+	for(const auto& symbol : data){
+		result[symbol.first] = vector<Factor>(symbol.second.begin(), symbol.second.end());
 	}	
 	return result;
 }
