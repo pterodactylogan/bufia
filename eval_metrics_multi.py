@@ -55,26 +55,17 @@ def min_d(row, num_evals):
 # Each file in licit_evals should correspond to a file in illicit_evals
 # at the SAME INDEX
 licit_evals = [
-    "./data/quechua/Wilson_Gallagher/eval_licit_succ.txt",
-               #"./data/quechua/Wilson_Gallagher/eval_licit_dev0_prec.txt",
-               "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_licit.txt",
-               "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_licit.txt",
-               "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_licit.txt"
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_licit_succ1.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_licit_prec1.txt",
     ]
 illicit_evals = [
-    "./data/quechua/Wilson_Gallagher/eval_illicit_succ.txt",
-    #"./data/quechua/Wilson_Gallagher/eval_illicit_dev0_prec.txt",
-    "./data/quechua/Wilson_Gallagher/tiers/c-dorsal/eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/tiers/dorsal/eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/tiers/laryngeal/eval_illicit.txt"
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_illicit_succ1.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_illicit_prec1.txt",
     ]
 
 grammar_sizes = [
     833, # successor
-    # precedence
-    14, # c-dorsal
-    38, # dorsal
-    89 # laryngeal
+    1303, # precedence
     ]
 
 if len(licit_evals) != len(illicit_evals):
@@ -144,7 +135,7 @@ licit_banned = all_licit[all_licit["banned"]]
 illicit_banned = all_illicit[all_illicit["banned"]]
 
 f1 = 0
-constraints = [60, 14, 38, 89]#[0 for i in range(len(grammar_sizes))]
+constraints = [193,10] #[0 for i in range(len(grammar_sizes))]
 fin_licit_banned = 0
 fin_illicit_banned = 0
 

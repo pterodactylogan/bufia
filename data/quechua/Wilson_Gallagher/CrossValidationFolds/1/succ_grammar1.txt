@@ -1,66 +1,3 @@
-k3n2 tier=none, successor
-train1, f=1, wb=true
-
-OPENMP DISPLAY ENVIRONMENT BEGIN
-   _OPENMP='201611'
-  [host] OMP_AFFINITY_FORMAT='Thread Affinity: %0.3L %.8n %.15{thread_affinity} %.12H'
-  [host] OMP_ALLOCATOR='omp_default_mem_alloc'
-  [host] OMP_CANCELLATION='TRUE'
-  [host] OMP_DEFAULT_DEVICE='0'
-  [host] OMP_DISPLAY_AFFINITY='TRUE'
-  [host] OMP_DISPLAY_ENV='TRUE'
-  [host] OMP_DYNAMIC='FALSE'
-  [host] OMP_MAX_ACTIVE_LEVELS='1'
-  [host] OMP_MAX_TASK_PRIORITY='0'
-  [host] OMP_NESTED: deprecated; max-active-levels-var=1
-  [host] OMP_NUM_TEAMS='0'
-  [host] OMP_NUM_THREADS='32'
-  [host] OMP_PLACES='cores'
-  [host] OMP_PROC_BIND='spread'
-  [host] OMP_SCHEDULE='static'
-  [host] OMP_STACKSIZE='16M'
-  [host] OMP_TARGET_OFFLOAD=DEFAULT
-  [host] OMP_TEAMS_THREAD_LIMIT='0'
-  [host] OMP_THREAD_LIMIT='2147483647'
-  [host] OMP_TOOL='enabled'
-  [host] OMP_TOOL_LIBRARIES: value is not defined
-  [host] OMP_TOOL_VERBOSE_INIT: value is not defined
-  [host] OMP_WAIT_POLICY='PASSIVE'
-OPENMP DISPLAY ENVIRONMENT END
-
-
-Thread Affinity: 001        1               1        fj001
-Thread Affinity: 001        0               0        fj001
-Thread Affinity: 001        2               3        fj001
-Thread Affinity: 001        3               4        fj001
-Thread Affinity: 001        5               7        fj001
-Thread Affinity: 001        6               9        fj001
-Thread Affinity: 001        9              13        fj001
-Thread Affinity: 001       10              15        fj001
-Thread Affinity: 001        8              12        fj001
-Thread Affinity: 001        7              10        fj001
-Thread Affinity: 001       14              21        fj001
-Thread Affinity: 001        4               6        fj001
-Thread Affinity: 001       17              26        fj001
-Thread Affinity: 001       18              27        fj001
-Thread Affinity: 001       16              24        fj001
-Thread Affinity: 001       11              16        fj001
-Thread Affinity: 001       12              18        fj001
-Thread Affinity: 001       15              22        fj001
-Thread Affinity: 001       30              45        fj001
-Thread Affinity: 001       29              44        fj001
-Thread Affinity: 001       25              38        fj001
-Thread Affinity: 001       26              39        fj001
-Thread Affinity: 001       24              36        fj001
-Thread Affinity: 001       13              19        fj001
-Thread Affinity: 001       27              41        fj001
-Thread Affinity: 001       19              29        fj001
-Thread Affinity: 001       28              42        fj001
-Thread Affinity: 001       21              32        fj001
-Thread Affinity: 001       20              30        fj001
-Thread Affinity: 001       31              47        fj001
-Thread Affinity: 001       22              33        fj001
-Thread Affinity: 001       23              35        fj001
 [+laryngeal][-syllabic]
 [+laryngeal][+wb]
 [+laryngeal][+mb]
@@ -893,7 +830,3 @@ Thread Affinity: 001       23              35        fj001
 [+high,+back][+sg,+labial][+high,+back]
 [+high,+back][+sg,+labial][+back,-low]
 [+back,+low][-son,+cont][+cg,-high]
-
-real	13m34.859s
-user	399m17.269s
-sys	24m48.209s

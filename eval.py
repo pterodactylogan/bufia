@@ -1,9 +1,14 @@
 import pandas as pd
 from factor import Factor
 
-grammar = open("./data/quechua/Wilson_Gallagher/tiers/laryngeal/laryngeal_grammar.txt")
+grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_grammar0.txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/dev/licit_dev0.txt")
+test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/licit_dev0.txt")
+
+output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/eval_licit_succ_test.txt",
+              "w")
+
+tier = []
 
 #dorsal
 #tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a"]
@@ -35,6 +40,7 @@ banned_facs = []
 for line in grammar.readlines():
     banned_facs.append(Factor(line.strip()))
 
+
 for line in test.readlines():
     word_fac = to_factor(line, feature_frame, tier=tier)
     
@@ -45,13 +51,14 @@ for line in test.readlines():
         if banned_facs[i].generates(word_fac):
             violated.append(banned_facs[i])
             violated_indices.append(i)
-    print(line.strip(),
-          len(violated),
+    info =[line.strip(),
+          str(len(violated)),
           ";".join([str(x) for x in violated]),
-          ";".join([str(x+1) for x in violated_indices]),
-          sep="\t")
+          ";".join([str(x+1) for x in violated_indices])]
+    output.write("\t".join(info)+"\n")
 
 
 grammar.close()
 features.close()
 test.close()
+output.close()

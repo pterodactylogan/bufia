@@ -1,11 +1,11 @@
 import random
 
-test = open("../WilsonGallagher2018_crossValidationFolds/test1", "r")
-licit_test = open("./CrossValidationFolds/1/licit_test1.txt", "w")
-illicit_test = open("./CrossValidationFolds/1/illicit_test1.txt", "w")
+test = open("../WilsonGallagher2018_crossValidationFolds/test4", "r")
+licit_test = open("./CrossValidationFolds/4/licit_test4.txt", "w")
+illicit_test = open("./CrossValidationFolds/4/illicit_test4.txt", "w")
 
-licit_dev = open("./CrossValidationFolds/1/licit_dev1.txt", "w")
-illicit_dev = open("./CrossValidationFolds/1/illicit_dev1.txt", "w")
+licit_dev = open("./CrossValidationFolds/4/licit_dev4.txt", "w")
+illicit_dev = open("./CrossValidationFolds/4/illicit_dev4.txt", "w")
 
 held_out = []
 licit = []
