@@ -159,7 +159,7 @@ Factor MakeFactor(const vector<string>& symbols,
 set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 	const unordered_map<string, Factor>& alphabet) {
 	set<Factor> result;
-	if(max_width == 0) {
+	if(max_width == 0 || word.size() == 0) {
 		result.insert(Factor());
 		return result;
 	}
@@ -168,8 +168,12 @@ set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 	for(int i=0; i<=word.size(); ++i) {
 		// make it a factor
 		Factor symb = MakeFactor(word, alphabet, i, i+1);
-		set<Factor> following_seq = GetSubsequences(vector<string>(word.begin()+1, 
-			word.end()), max_width-1, alphabet);
+
+		set<Factor> following_seq({Factor()});
+		if(i<word.size()) {
+			following_seq = GetSubsequences(vector<string>(word.begin()+1+i, 
+				word.end()), max_width-1, alphabet);
+		}
 		// concat with everything in following subsequences and add to result
 		for(const auto& seq : following_seq) {
 			Factor combo = symb;
@@ -235,6 +239,7 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 				}
 				symbols.push_back(symbol);
 			}
+
 			set<Factor> subseqs = GetSubsequences(symbols, max_width, alphabet);
 			for(const auto& seq : subseqs) {
 				data[seq.size()].insert(seq);
