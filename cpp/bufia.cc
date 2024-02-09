@@ -140,7 +140,9 @@ int main(int argc, char **argv) {
 		feature_order, feature_ranks, FEAT_DELIM, ADD_WB, RANK_FEATURES, TIER);
 	const int NUM_FEAT = feature_order.size();
 
-	if(DEBUG_MODE) std::cout << "Loaded Alphabet" << std::endl;
+	if(DEBUG_MODE) {
+		std::cout << "Loaded Alphabet" << std::endl;
+	}
 
 	// factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
@@ -161,23 +163,17 @@ int main(int argc, char **argv) {
 	list<Factor> to_expand;
 
 	while(true) {
-		// if(DEBUG_MODE &&
-		// 	(queue.size() + constraints.size() + to_expand.size()) % 1000 == 0) {
-		// 	std::cout << "queue: " << queue.size() << std::endl;
-		// 	std::cout << "constraints: " << constraints.size() << std::endl;
-		// 	std::cout << "to_expand: " << to_expand.size() << std::endl;
-		// }
 		if(queue.empty()) {
 			if(to_expand.empty()) break;
-			else if(RANK_FEATURES == 1){
+
+			if(RANK_FEATURES == 1){
 				queue = to_expand.front().getNextFactors(alphabet,
 					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, &feature_ranks);
-				to_expand.pop_front();
 			} else {
 				queue = to_expand.front().getNextFactors(alphabet,
 					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, nullptr);
-				to_expand.pop_front();
 			}
+			to_expand.pop_front();
 		}
 		if(queue.empty()) continue;
 

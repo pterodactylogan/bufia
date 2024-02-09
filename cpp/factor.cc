@@ -142,7 +142,7 @@ list<Factor> Factor::getNextFactors(
 	list<Factor> result;
 	int last = bundles.size()-1;
 
-
+	// find latest unset index and number of set features
 	int i = bundles[last].size()-1;
 	int unset_index = 0;
 	int num_features = 0;
@@ -187,8 +187,10 @@ list<Factor> Factor::getNextFactors(
 				// pair of index, value to represent an element like -son
 				std::pair<int, char> feat_pair = feature_ranks->at(i);
 
-				// if index is occupied by value, break
-				if(bundles[last][i] == feat_pair.second) break;
+				// if index is occupied by the relevant value, break
+				if(bundles[last][feat_pair.first] == feat_pair.second) {
+					break;
+				}
 
 				// otherwise add elem (if opposite elem is not present)
 				if(bundles[last][feature_ranks->at(i).first] == '*') {
@@ -213,7 +215,7 @@ list<Factor> Factor::getNextFactors(
 		next_blank.push_back(vector<char>(bundles[last].size(), '*'));
 		result.push_back(Factor(next_blank));
 	}
-
+	
 	return result;
 }
 
