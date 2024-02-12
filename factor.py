@@ -1,16 +1,3 @@
-# return list of lists of bundles
-def subsequences(bundles, size):
-    if size > len(bundles):
-        return []
-    if size == 0:
-        return [[]]
-
-    result = []
-    for bundle in bundles:
-        result += [[bundle] + bs for bs in subsequences(bundles[1:],
-                                                        size-1)]
-    return result
-
 class Factor:
     def __init__(self, string="", bundles=None):
         if bundles != None:
@@ -40,8 +27,8 @@ class Factor:
         return result
             
     def generates(self, child, mode="succ"):
-        if len(self.bundles) == 0 or len(child.bundles) == 0:
-            return False
+        if len(self.bundles) == 0:
+            return True
         
         if len(self.bundles) > len(child.bundles):
             return False
@@ -59,15 +46,11 @@ class Factor:
                 if(not found_mismatch):
                     return True
         elif mode == "prec":
-            # for each subsequence
-            for seq in subsequences(child.bundles, len(self.bundles)):
-                found_mismatch = False
-                for i in range(len(self.bundles)):
-                    if(not self.bundles[i].issubset(seq[i])):
-                       found_mismatch = True
-                       break
-                if(not found_mismatch):
-                    return True
+            for i in range(len(child.bundles)):
+                if self.bundles[0].issubset(
+                    child.bundles[i]) and Factor(bundles=self.bundles[1:]).generates(
+                    Factor(bundles=child.bundles[i+1:]), "prec"):
+                           return True
         else:
             raise Exception("invalid mode specified")
             
