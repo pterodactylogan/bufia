@@ -1,21 +1,22 @@
 import pandas as pd
 from factor import Factor
 
-grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_grammar0.txt")
+grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/prec_grammar_2-11.txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/licit_dev0.txt")
+test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/illicit_dev0.txt")
 
-output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/eval_licit_succ_test.txt",
+output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/eval_illicit_prec_2-11.txt",
               "w")
 
+mode = "prec"
 tier = []
 
 #dorsal
 #tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a"]
 
 #Laryngeal
-tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
-        "K", "Q", "h", "V", "@"]
+##tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
+##        "K", "Q", "h", "V", "@"]
 
 # C-Dorsal
 #tier = ["k", "g", "K", "q", "G", "Q", "@"]
@@ -42,13 +43,14 @@ for line in grammar.readlines():
 
 
 for line in test.readlines():
+    print(line)
     word_fac = to_factor(line, feature_frame, tier=tier)
     
     # get all constraints violated by word
     violated = []
     violated_indices = []
     for i in range(len(banned_facs)):
-        if banned_facs[i].generates(word_fac):
+        if banned_facs[i].generates(word_fac, mode):
             violated.append(banned_facs[i])
             violated_indices.append(i)
     info =[line.strip(),
