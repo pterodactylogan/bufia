@@ -55,24 +55,35 @@ def min_d(row, num_evals):
 # Each file in licit_evals should correspond to a file in illicit_evals
 # at the SAME INDEX
 licit_evals = [
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_licit_succ1.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_licit_prec1.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_licit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/prec_eval_licit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/c-dorsal_eval_licit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/dorsal_eval_licit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_eval_licit.txt"
     ]
 illicit_evals = [
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_illicit_succ1.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/eval_illicit_prec1.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/prec_eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/c-dorsal_eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/dorsal_eval_illicit.txt",
+    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_eval_illicit.txt"
     ]
 
-grammar_sizes = [
-    833, # successor
-    1303, # precedence
+
+constraints = [
+    246, #d=6
+    53, #d = 5
+    14, # all
+    47, # all
+    37 #d=5
     ]
 
 if len(licit_evals) != len(illicit_evals):
     print("no")
     quit
-if len(licit_evals) != len(grammar_sizes):
-    print("no!!!")
+
+if len(licit_evals) != len(constraints):
+    print("no")
     quit
 
 licit_frames = []
@@ -115,73 +126,16 @@ all_illicit.fillna('', inplace=True)
 total_licit = len(all_licit.index)
 total_illicit = len(all_illicit.index)
 
-all_licit["banned"] = all_licit.apply((lambda x:
-                                       has_violation(x, len(licit_frames))),
-                                                     axis=1)
-all_illicit["banned"] = all_illicit.apply((lambda x:
-                                       has_violation(x, len(illicit_frames))),
-                                                     axis=1)
-
-all_licit["min_d"] = all_licit.apply((lambda x:
-                                       min_d(x, len(licit_frames))),
-                                                     axis=1)
-all_illicit["min_d"] = all_illicit.apply((lambda x:
-                                       min_d(x, len(illicit_frames))),
-                                                     axis=1)
-
-
-
-licit_banned = all_licit[all_licit["banned"]]
-illicit_banned = all_illicit[all_illicit["banned"]]
-
-f1 = 0
-constraints = [193,10] #[0 for i in range(len(grammar_sizes))]
-fin_licit_banned = 0
-fin_illicit_banned = 0
-
-while True:
-    print(constraints)
-    print(f1)
-    best_i = -1
-    new_f1 = f1
-    indices_to_increment = []
-    for i in range(len(constraints)):
-        new_constraints = constraints.copy()
-        new_constraints[i] += 1
-        updated_licit = all_licit.apply((lambda x:
-                                        has_covered_violation(x, new_constraints)),
-                                        axis=1)
-        updated_illicit = all_illicit.apply((lambda x:
-                                        has_covered_violation(x, new_constraints)),
-                                        axis=1)
-        # calculate f1
-        nbanned_licit = len(updated_licit[updated_licit].index)
-        nallowed_licit = total_licit - nbanned_licit
-        nbanned_illicit = len(updated_illicit[updated_illicit].index)
-        nallowed_illicit = total_illicit - nbanned_illicit
-
-        # get precision, recall, and f1 score
-        precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
-        recall = nallowed_licit / total_licit
-        f1_score = 2 / ((1/precision) + (1/recall))
-
-            
-        if f1_score == new_f1 and constraints[i] < grammar_sizes[i]:
-            indices_to_increment.append(i)
-        if f1_score > new_f1:
-            indices_to_increment = [i]
-            new_f1  = f1_score
-            fin_licit_banned = nbanned_licit
-            fin_illicit_banned = nbanned_illicit
-    if len(indices_to_increment) == 0: break
-    
-    for index in indices_to_increment:
-        constraints[index] += 1
-    f1 = new_f1
-
-nbanned_licit = len(licit_banned.index)
+updated_licit = all_licit.apply((lambda x:
+                                has_covered_violation(x, constraints)),
+                                axis=1)
+updated_illicit = all_illicit.apply((lambda x:
+                                has_covered_violation(x, constraints)),
+                                axis=1)
+# calculate f1
+nbanned_licit = len(updated_licit[updated_licit].index)
 nallowed_licit = total_licit - nbanned_licit
-nbanned_illicit = len(illicit_banned.index)
+nbanned_illicit = len(updated_illicit[updated_illicit].index)
 nallowed_illicit = total_illicit - nbanned_illicit
 
 # get precision, recall, and f1 score
@@ -189,15 +143,9 @@ precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
 recall = nallowed_licit / total_licit
 f1_score = 2 / ((1/precision) + (1/recall))
 
-print("With all constraints:")
+print("With constraints:", constraints)
 print("p:",precision)
 print("r:", recall)
 print("f1:",f1_score)
 print("banned illicit:", nbanned_illicit, "/", total_illicit)
 print("banned licit:", nbanned_licit, "/", total_licit)
-
-print("With best constraints:")
-print("f1:", f1)
-print("banned illicit:", fin_illicit_banned, "/", total_illicit)
-print("banned licit:", fin_licit_banned, "/", total_licit)
-print(constraints)

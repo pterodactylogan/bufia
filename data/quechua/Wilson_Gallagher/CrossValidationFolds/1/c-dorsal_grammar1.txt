@@ -8,7 +8,7 @@
 [][+wb][]
 [-cont,+cg][-high]
 [-cont,+cg][+wb]
-[+mb][][-wb]
 [-wb][+dorsal][+dorsal]
 [+dorsal][+dorsal][+wb]
 [+wb][+dorsal][+wb]
+[+mb,-wb][][-wb]
