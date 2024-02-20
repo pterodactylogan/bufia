@@ -64,7 +64,8 @@ maybe this should be called bundleMatchingSymbols?
 >     | (IntSet.size xs) > (IntSet.size ys) = GT
 >     | minx < miny = LT
 >     | minx > miny = GT
->     | otherwise = compare (IntSet.delete minx xs) (IntSet.delete miny ys)
+>     | otherwise = compare (Bundle (IntSet.delete minx xs))
+>                           (Bundle (IntSet.delete miny ys))
 >     where minx = IntSet.findMin xs 
 >           miny = IntSet.findMin ys 
 
@@ -163,7 +164,7 @@ Structures
 >   where f x = x ++ "]"
 
 > setHread :: Sys -> String -> Set Struc 
-> setHread sys = Set.fromList . map (Struc.hread sys) . lines 
+> setHread sys = Set.fromList . map (Struc.hread sys) . filter (\x -> head x /= '%') . lines 
 
 > minStruc :: Struc
 > minStruc = Struc [minBundle]
@@ -273,7 +274,7 @@ We lift changeStructure to change a wordlist to a set of structures
 >      else nextStrucs
 
  
-`extension ord sys k x` gives the set of words of size k that match struc x. 
+`extension ord sys k x` gives the set of words of size k that match struc x.
 
 > extension :: Order -> Sys -> Int -> Struc -> Set [Symbol]
 > extension ord sys k x
