@@ -20,3 +20,6 @@ cpp/*test*
 *.slurm
 cpp/bufia_mpi
 *.html
+*/old/*
+*_eval_illicit.txt
+*_eval_licit.txt
