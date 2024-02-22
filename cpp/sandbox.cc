@@ -135,12 +135,40 @@ void TestComputeGeneratedNGrams() {
 		{"c", Factor({{'-', '-'}})}
 	});
 
-	Factor fac({{'*', '-'}, {'+', '*'}, {'*', '*'}});
+	Factor fac1({{'*', '-'}, {'+', '*'}, {'*', '*'}});
 
-	vector<vector<string>> ngrams = ComputeGeneratedNGrams(fac, alphabet);
-	std::cout << ngrams.size() << std::endl; // exp 12
+	vector<vector<string>> ngrams1 = ComputeGeneratedNGrams(fac1, alphabet);
+	std::cout << ngrams1.size() << std::endl; // exp 12
 
-	for(const auto& ngram : ngrams){
+	for(const auto& ngram : ngrams1){
+		for(const auto& symbol : ngram) {
+			std::cout << symbol << " ";
+		}
+		std::cout << ", ";
+	}
+	std::cout << std::endl;
+
+	Factor fac2({{'-', '-'}, {'+', '*'}});
+
+	std::set<vector<string>> ngrams2 = ComputeGeneratedNGrams(fac2, alphabet, 3);
+	std::cout << ngrams2.size() << std::endl; // exp 12
+
+	// all 3-grams containing "ca" or "cb"
+	for(const auto& ngram : ngrams2){
+		for(const auto& symbol : ngram) {
+			std::cout << symbol << " ";
+		}
+		std::cout << ", ";
+	}
+	std::cout << std::endl;
+
+	Factor fac3({{'-', '-'}, {'-', '-'}});
+
+	std::set<vector<string>> ngrams3 = ComputeGeneratedNGrams(fac3, alphabet, 4);
+	std::cout << ngrams3.size() << std::endl; // exp 21
+
+	// all 4-grams containing "cc"
+	for(const auto& ngram : ngrams3){
 		for(const auto& symbol : ngram) {
 			std::cout << symbol << " ";
 		}
@@ -149,9 +177,11 @@ void TestComputeGeneratedNGrams() {
 	std::cout << std::endl;
 }
 
+
 int main(int argc, char **argv) {
-	TestNextFactors();
-	TestGenerates();
-	TestCovers();
+	//TestGenerates();
+	//TestNextFactors();
+	//TestCompare();
+	//TestCovers();
 	TestComputeGeneratedNGrams();
 }

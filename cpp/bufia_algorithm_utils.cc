@@ -9,6 +9,7 @@
 
 using ::std::vector;
 using ::std::string;
+using ::std::set;
 
 bool Contains(const vector<Factor>& positive_data,
 	const Factor& parent) {
@@ -92,6 +93,25 @@ vector<vector<string>> ComputeGeneratedNGrams(const Factor& fac,
 			concat.insert(concat.end(), tail.begin(), tail.end());
 				result.push_back(concat);
 			}
+		}
+	}
+	return result;
+}
+
+set<vector<string>> ComputeGeneratedNGrams(const Factor& fac,
+	const std::unordered_map<std::string, Factor>& alphabet,
+	int size) {
+	if(fac.bundles.size() == 0 || fac.bundles.size() > size) return {{}};
+
+	set<vector<string>> result;
+	int diff = size - fac.bundles.size();
+	for(int i=0; i<=diff; ++i){
+		vector<char> blank(fac.bundles[0].size(), '*');
+		Factor padded = Factor(vector<vector<char>>(i, blank));
+		padded.append(fac);
+		padded.append(Factor(vector<vector<char>>(diff-i, blank)));
+		for(const auto& ngram : ComputeGeneratedNGrams(padded, alphabet)){
+			result.insert(ngram);
 		}
 	}
 	return result;

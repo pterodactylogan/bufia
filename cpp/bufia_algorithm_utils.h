@@ -25,4 +25,8 @@ std::string Display(const Factor& fac,
 vector<vector<std::string>> ComputeGeneratedNGrams(const Factor& fac,
 	const std::unordered_map<std::string, Factor>& alphabet);
 
+std::set<vector<std::string>> ComputeGeneratedNGrams(const Factor& fac,
+	const std::unordered_map<std::string, Factor>& alphabet,
+	int size);
+
 #endif /* BUFIA_ALGORITHM_UTILS_H */

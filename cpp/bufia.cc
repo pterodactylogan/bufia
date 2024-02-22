@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 	int MAX_FACTOR_WIDTH = 3;
 	int MAX_FEATURES_PER_BUNDLE = 3;
 	bool DEBUG_MODE = false;
+	// number of new kgrams which must be added by constraint
 	int ABDUCTIVE_PRINCIPLE = 1;
 	int RANK_FEATURES = 1;
 	string FEAT_DELIM = ",";
@@ -195,34 +196,22 @@ int main(int argc, char **argv) {
 		queue.pop_front();
 	}
 
-	if(ABDUCTIVE_PRINCIPLE==1) {
+	if(ABDUCTIVE_PRINCIPLE > 0) {
 	  // remove redundant constraints
 	  set<vector<string>> banned_ngrams;
 		
 		for(Factor const& constraint : constraints){
-			vector<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, alphabet);
-			bool added_ngrams = false;
+			set<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, 
+																															alphabet,
+																															MAX_FACTOR_WIDTH);
+			int added_ngrams = 0;
 			for(const auto& ngram : ngrams){
-				bool redundant = false;
-				// check all substrings to see if those are already banned
-				for(int i = 1; i<ngram.size(); i++){
-					if(redundant) break;
-					for(int offset = 0; offset <= ngram.size()-i; offset++){
-						// check if ngram[offset:offset+i] is in banned_ngrams
-						vector<string> slice = 
-							vector<string>(ngram.begin()+offset, ngram.begin() + offset + i);
-						if(banned_ngrams.find(slice) != banned_ngrams.end()) {
-							redundant = true;
-							break;
-						}
-					}
-				}
-				if(!redundant && banned_ngrams.insert(ngram).second == true) {
-					added_ngrams = true;
+				if(banned_ngrams.insert(ngram).second == true) {
+					++added_ngrams;;
 				}
 			}
 
-			if(added_ngrams) {
+			if(added_ngrams >= ABDUCTIVE_PRINCIPLE) {
 				std::cout << Display(constraint, feature_order) << std::endl;
 			}
 		}
