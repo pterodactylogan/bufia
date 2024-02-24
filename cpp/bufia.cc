@@ -204,14 +204,18 @@ int main(int argc, char **argv) {
 			set<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, 
 																															alphabet,
 																															MAX_FACTOR_WIDTH);
-			int added_ngrams = 0;
+			int new_ngrams = 0;
 			for(const auto& ngram : ngrams){
-				if(banned_ngrams.insert(ngram).second == true) {
-					++added_ngrams;;
+				if(banned_ngrams.find(ngram) == banned_ngrams.end()) {
+					++new_ngrams;
+					if(new_ngrams >= ABDUCTIVE_PRINCIPLE) break;
 				}
 			}
 
-			if(added_ngrams >= ABDUCTIVE_PRINCIPLE) {
+			if(new_ngrams >= ABDUCTIVE_PRINCIPLE) {
+				for(const auto& ngram : ngrams) {
+					banned_ngrams.insert(ngram);
+				}
 				std::cout << Display(constraint, feature_order) << std::endl;
 			}
 		}
