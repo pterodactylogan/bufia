@@ -52,30 +52,20 @@ def min_d(row, num_evals):
             min_d = d
     return min_d
 
+pref = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/evals/"
+suff = ".txt"
+tiers = ["succ", "c-dorsal", "dorsal", "laryngeal"]
+
 # Each file in licit_evals should correspond to a file in illicit_evals
 # at the SAME INDEX
-licit_evals = [
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_licit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/prec_eval_licit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/c-dorsal_eval_licit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/dorsal_eval_licit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_eval_licit.txt"
-    ]
-illicit_evals = [
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/prec_eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/c-dorsal_eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/dorsal_eval_illicit.txt",
-    "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_eval_illicit.txt"
-    ]
-
+licit_evals = [ pref + t + "_eval_licit" + suff for t in tiers]
+illicit_evals = [ pref + t + "_eval_illicit" + suff for t in tiers]
 
 constraints = [
-    246, #d=6
-    53, #d = 5
-    14, # all
-    47, # all
-    37 #d=5
+    3, #all
+    2, 
+    9, # all
+    4, # all
     ]
 
 if len(licit_evals) != len(illicit_evals):
@@ -149,3 +139,5 @@ print("r:", recall)
 print("f1:",f1_score)
 print("banned illicit:", nbanned_illicit, "/", total_illicit)
 print("banned licit:", nbanned_licit, "/", total_licit)
+
+print(updated_illicit.head())
