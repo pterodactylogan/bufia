@@ -136,10 +136,26 @@ bool Factor::generates(const Factor& child) const {
 
 list<Factor> Factor::getNextFactors(
 	const unordered_map<std::string, Factor>& alphabet, 
-	int max_width, int max_features,
+	int max_width, int max_features, int max_dist,
 	vector<std::pair<int, char>>* feature_ranks) const {
 
 	list<Factor> result;
+
+	if(max_dist > -1){
+		int dist = 0;
+		for(int i = 0; i<bundles.size(); ++i){
+			++dist;
+
+			for(int j=0; j<bundles[i].size(); ++j){
+				if(bundles[i][j] != '*') ++dist;
+			}
+		}
+
+		if(dist >= max_dist) {
+			return result;
+		}
+	}
+
 	int last = bundles.size()-1;
 
 	// find latest unset index and number of set features
@@ -155,7 +171,7 @@ list<Factor> Factor::getNextFactors(
 	}
 
 	if(feature_ranks ==nullptr) {
-		if(num_features < max_features) {
+		if(max_features == -1 || num_features < max_features) {
 			for(; unset_index<bundles[last].size(); unset_index++){
 				vector<vector<char>> next_pos = bundles;
 				next_pos[last][unset_index] = '+';
@@ -181,7 +197,7 @@ list<Factor> Factor::getNextFactors(
 			}
 		}
 	} else {
-		if(num_features < max_features) {
+		if(max_features == -1 || num_features < max_features) {
 			for(int i = feature_ranks->size()-1; i>=0; --i) {
 
 				// pair of index, value to represent an element like -son
@@ -210,7 +226,7 @@ list<Factor> Factor::getNextFactors(
 		}
 	}
 
-	if(bundles.size() < max_width) {
+	if(max_width == -1 || bundles.size() < max_width) {
 		vector<vector<char>> next_blank = bundles;
 		next_blank.push_back(vector<char>(bundles[last].size(), '*'));
 		result.push_back(Factor(next_blank));

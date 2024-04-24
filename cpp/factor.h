@@ -39,7 +39,7 @@ public:
 	// path.
 	list<Factor> getNextFactors(
 		const std::unordered_map<std::string, Factor>& alphabet, 
-		int max_width, int max_features,
+		int max_width, int max_features, int max_dist,
 		vector<std::pair<int, char>>* feature_ranks = nullptr) const;
 
 	// Returns a string displaying Factor contents. For debugging.

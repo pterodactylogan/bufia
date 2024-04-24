@@ -34,8 +34,9 @@ double diff_timespec(struct timespec *time1, struct timespec *time0) {
 }
 
 int main(int argc, char **argv) {
-	int MAX_FACTOR_WIDTH = 3;
-	int MAX_FEATURES_PER_BUNDLE = 3;
+	int MAX_FACTOR_WIDTH = -1;
+	int MAX_FEATURES_PER_BUNDLE = -1;
+	int MAX_DISTANCE = -1;
 	bool DEBUG_MODE = false;
 	// number of new kgrams which must be added by constraint
 	int ABDUCTIVE_PRINCIPLE = 1;
@@ -64,6 +65,12 @@ int main(int argc, char **argv) {
 		pos = arg.find("n=");
 		if(pos != string::npos){
 			MAX_FEATURES_PER_BUNDLE = std::stoi(arg.substr(pos+2));
+			continue;
+		}
+
+		pos = arg.find("d=");
+		if(pos != string::npos){
+			MAX_DISTANCE = std::stoi(arg.substr(pos+2));
 			continue;
 		}
 
@@ -114,6 +121,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	if(MAX_DISTANCE == -1 && (MAX_FACTOR_WIDTH == -1 || MAX_FEATURES_PER_BUNDLE == -1)){
+		MAX_DISTANCE = 9;
+	}
+
+	if(MAX_FACTOR_WIDTH == -1) {
+		MAX_FACTOR_WIDTH = MAX_DISTANCE - 1;
+	}
+
 	if(!TIER.empty() && ADD_WB) TIER.push_back("#");
 
 	string feature_filename = argv[2];
@@ -145,7 +160,7 @@ int main(int argc, char **argv) {
 		std::cout << "Loaded Alphabet" << std::endl;
 	}
 
-	// factor width -> vector of factors
+	//  factor width -> vector of factors
 	unordered_map<int, vector<Factor>> positive_data = 
 		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, TIER, ORDER, ADD_WB);
 
@@ -169,10 +184,10 @@ int main(int argc, char **argv) {
 
 			if(RANK_FEATURES == 1){
 				queue = to_expand.front().getNextFactors(alphabet,
-					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, &feature_ranks);
+					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, MAX_DISTANCE, &feature_ranks);
 			} else {
 				queue = to_expand.front().getNextFactors(alphabet,
-					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, nullptr);
+					MAX_FACTOR_WIDTH, MAX_FEATURES_PER_BUNDLE, MAX_DISTANCE, nullptr);
 			}
 			to_expand.pop_front();
 		}
