@@ -17,7 +17,7 @@ bool Contains(const vector<Factor>& positive_data,
 
 // Returns true if any Factor in `constraints` generates `child`, false
 // otherwise.
-bool Covers(const vector<Factor>& constraints, const Factor& child);
+bool Covers(const vector<Factor>& constraints, const Factor& child, int order = 1);
 
 std::string Display(const Factor& fac, 
 	const vector<std::string>& feature_order);

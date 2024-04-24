@@ -30,13 +30,13 @@ bool Contains(const vector<Factor>& positive_data,
 	return found;
 }
 
-bool Covers(const vector<Factor>& constraints, const Factor& child) {
+bool Covers(const vector<Factor>& constraints, const Factor& child, int order) {
 	bool found = false;
 	#pragma omp parallel shared(found)
 	{
 		#pragma omp for
 		for(int i=0; i<constraints.size(); i++){
-			if(constraints[i].generates(child)){
+			if(constraints[i].generates(child, order)){
 				#pragma omp critical
 				{
 					found = true;

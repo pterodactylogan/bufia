@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 		}
 		if(queue.empty()) continue;
 
-		if(Covers(constraints, queue.front())) {
+		if(Covers(constraints, queue.front(), ORDER)) {
 			queue.pop_front();
 			continue;
 		}

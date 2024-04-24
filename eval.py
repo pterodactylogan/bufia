@@ -1,11 +1,11 @@
 import pandas as pd
 from factor import Factor
 
-grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_grammar0.txt")
+grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/c-dorsal_constraints.txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/licit_dev0.txt")
+test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/synthetic_illicit_wb.txt")
 
-output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/laryngeal_eval_licit.txt",
+output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/evals/c-dorsal_eval_illicit_wb.txt",
               "w")
 
 find_all = False
@@ -13,14 +13,14 @@ mode = "succ"
 #tier = []
 
 #dorsal
-#tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a"]
+##tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a", "#"]
 
 #Laryngeal
-tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
-        "K", "Q", "h", "V", "@"]
+##tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
+##        "K", "Q", "h", "V", "@", "#"]
 
 # C-Dorsal
-#tier = ["k", "g", "K", "q", "G", "Q", "@"]
+tier = ["k", "g", "K", "q", "G", "Q", "@", "#"]
 
 feature_frame = pd.read_csv(features, index_col=0)
 feature_frame = feature_frame.astype(str)
@@ -60,7 +60,7 @@ for line in test.readlines():
             
             if not find_all:
                 break
-            
+
     info =[line.strip(),
           str(len(violated)),
           ";".join([str(x) for x in violated]),

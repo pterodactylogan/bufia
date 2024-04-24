@@ -18,6 +18,8 @@ using ::std::string;
 // THIS FILE IS FOR DEVELOPMENT ONLY
 // NOT A PROPERLY SET UP TEST SUITE
 void TestGenerates() {		
+	std::cout << "Test Generates:" << std::endl;
+
 	vector<vector<char>> vec = {{'*', '+', '+', '*', '-'}, {'*', '+', '*', '-', '*'}};
 	Factor fac(vec);
 
@@ -86,6 +88,30 @@ void TestGenerates() {
 
 	std::cout << "Expect T: " << unbounded.generates(ub_child) << std::endl;
 	std::cout << "Expect F: " << unbounded.generates(ub_nc) << std::endl;
+
+	std::cout << std::endl;
+}
+
+void TestGeneratesWithPrecedence() {
+	std::cout << "Test Generates with Precedence:" << std::endl;
+
+	vector<vector<char>> vec = {{'*', '+', '+'}, {'*', '+', '*'}};
+	Factor fac(vec);
+
+	vec = {{'*', '+', '+'}, {'+', '+', '0'}, {'*', '*', '-'}};
+	Factor child_succ(vec);
+
+	vec = {{'*', '+', '+'}, {'*', '-', '-'}, {'0', '+', '-'}};
+	Factor child_prec(vec);
+
+	vec = {{'*', '*', '+'}, {'*', '+', '*'}};
+	Factor non_child(vec);
+
+	std::cout << "Expect T:" << fac.generates(child_succ, 2) << std::endl; // exp T
+	std::cout << "Expect T:" << fac.generates(child_prec, 2) << std::endl; // exp T
+	std::cout << "Expect F:" << fac.generates(non_child, 2) << std::endl; // exp F
+
+	std::cout << std::endl;
 }
 
 void TestNextFactors() {	
@@ -177,11 +203,23 @@ void TestComputeGeneratedNGrams() {
 	std::cout << std::endl;
 }
 
+void TestAppend() {
+	vector<vector<char>> vec = {{'*', '+', '+', '*', '-'}, {'*', '+', '*', '-', '*'}};
+	Factor fac1(vec);
+
+	Factor fac2 = fac1;
+
+	vec = {{'*', '+', '+', '*', '-'}};
+	Factor fac3(vec);
+
+	fac2.append(fac3);
+
+	std::cout << fac1.toString() << std::endl;
+	std::cout << fac2.toString() << std::endl;
+}
 
 int main(int argc, char **argv) {
-	//TestGenerates();
-	//TestNextFactors();
-	//TestCompare();
-	//TestCovers();
-	TestComputeGeneratedNGrams();
+	TestGenerates();
+	TestGeneratesWithPrecedence();
+	//TestAppend();
 }

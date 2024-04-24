@@ -3,10 +3,12 @@
 #include <iostream>
 
 #include <list>
+#include <set>
 #include <vector>
 #include <unordered_map>
 
 using ::std::list;
+using ::std::set;
 using ::std::unordered_map;
 using ::std::vector;
 
@@ -87,49 +89,72 @@ std::string Factor::toString() const {
 	return result;
 }
 
-bool Factor::generates(const Factor& child) const {
+// get all subsequences of a factor of the specified `width`
+set<Factor> Factor::getSubsequences(int width) const {
+
+	set<Factor> result;
+	if(width == 0 || bundles.size() == 0) {
+		result.insert(Factor());
+		return result;
+	}
+
+	// for each symbol
+	for(int i=0; i<bundles.size(); ++i) {
+		// chop it off
+		Factor seg = Factor({bundles[i]});
+
+		set<Factor> following_seq;
+		if(i + width - 1 < bundles.size()) {
+			following_seq = Factor(vector<vector<char>>(bundles.begin()+i+1, bundles.end()))
+								.getSubsequences(width-1);
+		}
+		// concat with everything in following subsequences and add to result
+		for(const auto& seq : following_seq) {
+			Factor combo = seg;
+			combo.append(seq);
+			result.insert(combo);
+		}
+	}
+	return result;
+}
+
+bool Factor::generates(const Factor& child, int order) const {
 	if(bundles.size() == 0 || child.bundles.size() == 0) return false;
 	if(bundles.size() > child.bundles.size()) return false;
 	if(bundles.at(0).size() != child.bundles.at(0).size()) return false;
-
-	// If same size or this starts with #, anchor left
-	if(bundles.size() == child.bundles.size() || bundles[0][0] == '#'){
-		for(int i=0; i<bundles.size(); i++){
-			for(int j=0; j<bundles.at(0).size(); j++){
-				if(bundles[i][j] == '*') continue;
-				if(bundles[i][j] != child.bundles[i][j]) return false;
-			}
-		}
-		return true;
-	}
-
-	// If this ends with #, anchor right
-	if(bundles[bundles.size()-1][0] == '#'){
-		for(int i=1; i<=bundles.size(); i++){	
-			for(int j=0; j<bundles.at(0).size(); j++){
-				if(bundles[bundles.size()-i][j] == '*') continue;
-				if(bundles[bundles.size()-i][j] != 
-					child.bundles[child.bundles.size()-i][j]) return false;
-			}
-		}
-		return true;
-	}
-
-	// Otherwise, check all k-size substrings
-	for(int offset = 0; offset <= child.bundles.size() - bundles.size(); 
-		offset++) {
-		bool found_mismatch = false;
-		for(int i=0; i<bundles.size(); i++){
-			if(found_mismatch) break;
-			for(int j=0; j<bundles.at(0).size(); j++){
-				if(bundles[i][j] == '*') continue;
-				if(bundles[i][j] != child.bundles[i+offset][j]){
-					found_mismatch = true;
-					break;
+	
+	if(order ==1) {
+		// check all k-size substrings
+		for(int offset = 0; offset <= child.bundles.size() - bundles.size(); 
+			offset++) {
+			bool found_mismatch = false;
+			for(int i=0; i<bundles.size(); i++){
+				if(found_mismatch) break;
+				for(int j=0; j<bundles.at(0).size(); j++){
+					if(bundles[i][j] == '*') continue;
+					if(bundles[i][j] != child.bundles[i+offset][j]){
+						found_mismatch = true;
+						break;
+					}
 				}
 			}
+			if(!found_mismatch) return true;
 		}
-		if(!found_mismatch) return true;
+	} else {
+		for(const auto& seq : child.getSubsequences(bundles.size())) {
+			bool found_mismatch = false;
+			for (int i=0; i<bundles.size(); i++){
+				if(found_mismatch) break;
+				for(int j=0; j<bundles.at(0).size(); j++){
+					if(bundles[i][j] == '*') continue;
+					if(bundles[i][j] != seq.bundles[i][j]){
+						found_mismatch = true;
+						break;
+					}
+				}
+			}
+			if(!found_mismatch) return true;
+		}
 	}
 	return false;
 }
