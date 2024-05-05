@@ -10,7 +10,7 @@ def has_violation(row, num_evals):
         print(row)
     return False
 
-def has_covered_violation(row, constraints):
+def has_covered_violation(row, constraints, p = False, mode = "illicit"):
     #try:
         for i in range(len(constraints)):
             constraint_vals = row["r" + str(i)]
@@ -18,7 +18,11 @@ def has_covered_violation(row, constraints):
                 continue
             if constraints[i] >= int(constraint_vals.split(";")[0]):
                 #print("rank:",constraint_vals.split(";")[0])
+                if mode == "licit" and p:
+                    print(row["word0"])
                 return True
+        if p and mode == "illicit":
+            print(row["word0"])
         return False
 
 '''
@@ -52,7 +56,7 @@ def min_d(row, num_evals):
             min_d = d
     return min_d
 
-pref = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/evals/"
+pref = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/"
 suff = ".txt"
 tiers = ["succ", "c-dorsal", "dorsal", "laryngeal"]
 
@@ -62,10 +66,10 @@ licit_evals = [ pref + t + "_eval_licit" + suff for t in tiers]
 illicit_evals = [ pref + t + "_eval_illicit" + suff for t in tiers]
 
 constraints = [
-    3, #all
-    2, 
-    9, # all
-    4, # all
+    0,
+    0, # all
+    40, # all
+    0, # all
     ]
 
 if len(licit_evals) != len(illicit_evals):
@@ -117,10 +121,10 @@ total_licit = len(all_licit.index)
 total_illicit = len(all_illicit.index)
 
 updated_licit = all_licit.apply((lambda x:
-                                has_covered_violation(x, constraints)),
+                                has_covered_violation(x, constraints, False, "licit")),
                                 axis=1)
 updated_illicit = all_illicit.apply((lambda x:
-                                has_covered_violation(x, constraints)),
+                                has_covered_violation(x, constraints, False, "illicit")),
                                 axis=1)
 # calculate f1
 nbanned_licit = len(updated_licit[updated_licit].index)

@@ -1,16 +1,16 @@
 import pandas as pd
 from factor import Factor
 
-grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/c-dorsal_constraints.txt")
+grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_grammar0.txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/synthetic_illicit_wb.txt")
+test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/illicit_dev0.txt")
 
-output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/all/evals/c-dorsal_eval_illicit_wb.txt",
+output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_illicit.txt",
               "w")
 
 find_all = False
 mode = "succ"
-#tier = []
+tier = []
 
 #dorsal
 ##tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a", "#"]
@@ -20,7 +20,7 @@ mode = "succ"
 ##        "K", "Q", "h", "V", "@", "#"]
 
 # C-Dorsal
-tier = ["k", "g", "K", "q", "G", "Q", "@", "#"]
+##tier = ["k", "g", "K", "q", "G", "Q", "@", "#"]
 
 feature_frame = pd.read_csv(features, index_col=0)
 feature_frame = feature_frame.astype(str)

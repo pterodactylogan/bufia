@@ -24,3 +24,6 @@ print("expect False:", parent.generates(nonchild, "prec"))
 
 print(parent)
 print(child1)
+
+fac = Factor("[][-b][]")
+print(fac.bundles)

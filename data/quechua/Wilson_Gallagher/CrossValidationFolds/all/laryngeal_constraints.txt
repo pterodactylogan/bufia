@@ -1,0 +1,4 @@
+[-cont][+cg]
+[+cg][+cg]
+[+sg][+sg]
+[-cont][-cont,+sg]

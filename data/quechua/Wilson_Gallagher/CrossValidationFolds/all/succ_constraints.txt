@@ -1,0 +1,3 @@
+[+syllabic][+syllabic]
+[-syllabic][-syllabic][-syllabic]
+[+labial,+cont][+back,-low]

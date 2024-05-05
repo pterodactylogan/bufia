@@ -5,9 +5,8 @@ class Factor:
             return
         
         self.bundles = []
-        bundles = string.split("][")
+        bundles = string.strip("]").strip("[").split("][")
         for bundle in bundles:
-            bundle = bundle.strip("]").strip("[")
             feats = set()
             if bundle != "":
                 for item in bundle.split(","):
