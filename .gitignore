@@ -23,4 +23,5 @@ cpp/bufia_mpi
 */old/*
 *_eval_illicit.txt
 *_eval_licit.txt
-*/old/*
+*old*
+*__pycache__*
