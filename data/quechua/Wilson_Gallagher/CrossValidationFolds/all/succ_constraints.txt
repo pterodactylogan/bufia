@@ -1,3 +1,6 @@
 [+syllabic][+syllabic]
+[+wb][+syllabic]
 [-syllabic][-syllabic][-syllabic]
+[+wb][-syllabic][-syllabic]
+[-syllabic][-syllabic][+wb]
 [+labial,+cont][+back,-low]
