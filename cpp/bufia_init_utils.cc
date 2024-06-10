@@ -145,11 +145,16 @@ LoadAlphabetFeatures(std::ifstream* feature_file,
 Factor MakeFactor(const vector<string>& symbols,
 	const unordered_map<string, Factor>& alphabet, int begin_index=0,
 	int end_index=-1) {
+
 	vector<vector<char>> bundles;
 	if(end_index < 0 || end_index > symbols.size()) end_index = symbols.size();
 	if(begin_index <0) begin_index = 0;
 
 	for(int i=begin_index; i<end_index; i++) {
+		if (alphabet.find(symbols.at(i)) == alphabet.end()) {
+			std::cout << "Symbol " << symbols.at(i) << " is not present in feature file." << std::endl;
+			continue;
+		}
 		bundles.push_back(vector<char>(alphabet.at(symbols.at(i)).bundles[0]));
 	}
 	Factor ret(bundles);
@@ -199,6 +204,7 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 		// go through all words in file
 		while(std::getline(*data_file, word)){
 			if(add_wb) word = "# " + word + " #";
+
 			std::stringstream word_stream;
 			word_stream << word;
 			string symbol;
@@ -213,6 +219,7 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 					!= tier.end()) {
 					prev.push_back(symbol);
 				}
+
 				for(int width = 1; width<=max_width; width++){
 					if(prev.size() >= width) {
 						data[width].insert(MakeFactor(prev, alphabet, 
