@@ -1,11 +1,15 @@
 import pandas as pd
 from factor import Factor
 
-prefix = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/"
-illicit_file = prefix + "0/counts/succ_eval_illicit_c=10.txt"
-licit_file = prefix+ "0/counts/succ_eval_licit_c=10.txt"
+tier = "laryngeal"
+split = "dev"
+fold = "4"
 
-grammar = prefix +"0/succ_grammar0.txt"
+prefix = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/".format(fold)
+illicit_file = prefix + "evals/{0}_eval_illicit_{1}.txt".format(tier, split)
+licit_file = prefix+ "evals/{0}_eval_licit_{1}.txt".format(tier, split)
+
+grammar = prefix +"{0}_grammar{1}.txt".format(tier, fold)
 
 with open(grammar) as f:
     constraints = [Factor(line.rstrip('\n')) for line in f]

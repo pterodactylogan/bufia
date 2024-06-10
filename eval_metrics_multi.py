@@ -56,8 +56,8 @@ def min_d(row, num_evals):
             min_d = d
     return min_d
 
-pref = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/"
-suff = ".txt"
+pref = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/1/evals/"
+suff = "_dev.txt"
 tiers = ["succ", "c-dorsal", "dorsal", "laryngeal"]
 
 # Each file in licit_evals should correspond to a file in illicit_evals
@@ -65,12 +65,10 @@ tiers = ["succ", "c-dorsal", "dorsal", "laryngeal"]
 licit_evals = [ pref + t + "_eval_licit" + suff for t in tiers]
 illicit_evals = [ pref + t + "_eval_illicit" + suff for t in tiers]
 
-constraints = [
-    0,
-    0, # all
-    40, # all
-    0, # all
-    ]
+constraints = [300,
+               14,
+               47,
+               82]
 
 if len(licit_evals) != len(illicit_evals):
     print("no")
@@ -120,12 +118,24 @@ all_illicit.fillna('', inplace=True)
 total_licit = len(all_licit.index)
 total_illicit = len(all_illicit.index)
 
+#CHANGE
+total_held_out = 438
+
+held_out = all_licit[all_licit.index < total_held_out]
+updated_held_out = held_out.apply((lambda x:
+                                has_covered_violation(x, constraints, False, "licit")),
+                                axis=1)
+
 updated_licit = all_licit.apply((lambda x:
                                 has_covered_violation(x, constraints, False, "licit")),
                                 axis=1)
 updated_illicit = all_illicit.apply((lambda x:
                                 has_covered_violation(x, constraints, False, "illicit")),
                                 axis=1)
+allowed_illicit = all_illicit[all_illicit.apply((lambda x:
+                                not has_covered_violation(x, constraints, False, "illicit")),
+                                axis=1)]
+
 # calculate f1
 nbanned_licit = len(updated_licit[updated_licit].index)
 nallowed_licit = total_licit - nbanned_licit
@@ -137,11 +147,17 @@ precision = nallowed_licit / (nallowed_licit + nallowed_illicit)
 recall = nallowed_licit / total_licit
 f1_score = 2 / ((1/precision) + (1/recall))
 
+banned_att = len(updated_held_out[updated_held_out].index)
 print("With constraints:", constraints)
 print("p:",precision)
 print("r:", recall)
 print("f1:",f1_score)
 print("banned illicit:", nbanned_illicit, "/", total_illicit)
 print("banned licit:", nbanned_licit, "/", total_licit)
+print("banned held-out", banned_att, "/", total_held_out)
+print("allowed held-out", 100*(total_held_out - banned_att) / total_held_out, "%")
+print("allowed licit", 100*(total_licit - nbanned_licit)/total_licit, "%")
+print("allowed illicit", 100*(total_illicit - nbanned_illicit)/total_illicit, "%")
+
 
 print(updated_illicit.head())

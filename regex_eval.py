@@ -2,26 +2,34 @@ import pandas as pd
 from factor import Factor
 import re
 
-grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_grammar0.txt")
-features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
-test = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/licit_dev0.txt")
+t = "laryngeal"
+fold = "4"
+name = "licit"
+split = "dev"
 
-output = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/0/succ_eval_licit.txt",
+grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/" + fold +
+               "/" + t + "_grammar" + fold + ".txt")
+features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
+
+test = open(("./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/"+
+            "{1}_{2}{0}.txt").format(fold, name, split))
+
+output = open(("./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/evals/" +
+              "{1}_eval_{2}_{3}.txt").format(fold, t, name, split),
               "w")
 
 find_all = False
 mode = "succ"
-tier = []
 
-#dorsal
-##tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a", "#"]
-
-#Laryngeal
-##tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
-##        "K", "Q", "h", "V", "@", "#"]
-
-# C-Dorsal
-##tier = ["k", "g", "K", "q", "G", "Q", "@", "#"]
+if t == "succ":
+    tier = []
+elif t == "dorsal":
+    tier = ["k", "g", "K", "q", "G", "Q", "i", "u", "e", "o", "a", "#"]
+elif t=="laryngeal":
+    tier = ["p", "t", "c", "k", "q", "b", "d", "z", "g", "G", "P", "T", "C",
+       "K", "Q", "h", "V", "@", "#"]
+elif t == "c-dorsal":
+    tier = ["k", "g", "K", "q", "G", "Q", "@", "#"]
 
 feature_frame = pd.read_csv(features, index_col=0)
 feature_frame = feature_frame.astype(str).transpose()

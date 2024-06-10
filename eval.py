@@ -2,18 +2,19 @@ import pandas as pd
 from factor import Factor
 
 t = "succ"
-fold = "0"
-name = "att"
+fold = "4"
+name = "licit"
+split = "dev"
 
 grammar = open("./data/quechua/Wilson_Gallagher/CrossValidationFolds/" + fold +
                "/" + t + "_grammar" + fold + ".txt")
 features = open("./data/quechua/Wilson_Gallagher/features_wb.csv")
 
 test = open(("./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/"+
-            "our_eval/{1}_dev{0}.txt").format(fold, name))
+            "{1}_{2}{0}.txt").format(fold, name, split))
 
-output = open(("./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/" +
-              "our_eval/{1}_eval_{2}.txt").format(fold, t, name),
+output = open(("./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/evals/" +
+              "{1}_eval_{2}_{3}.txt").format(fold, t, name, split),
               "w")
 
 find_all = False
