@@ -8,6 +8,8 @@
 
 #include "factor.h"
 
+using ::std::pair;
+
 // Takes a file object with the features for each character in the alphabet.
 // Returns a map from alphabet entries to corresponding 1-dimensional factors.
 // `feature_order` will be populated with the feature names in the order
@@ -20,9 +22,9 @@ std::unordered_map<std::string, Factor>
 
 // Takes a file object with positive training data, an alphabet mapping symbols
 // to corresponding factors, and max factor width to consider.
-// Returns a map from factor width to the set of Factors with that width present
-// in the data.
-std::unordered_map<int, std::vector<Factor>> 
+// Returns a map from factor width to the muliset of Factors with that width present
+// in the data (represented as (factor, count) pairs).
+std::unordered_map<int, std::vector<pair<Factor, int>>> 
 	LoadPositiveData(std::ifstream* data_file, int max_width,
 	const std::unordered_map<std::string, Factor>& alphabet,
 	const std::vector<std::string>& tier,

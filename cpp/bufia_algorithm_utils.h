@@ -7,13 +7,14 @@
 #include "factor.h"
 
 using ::std::vector;
+using ::std::pair;
 
 //TODO: possibly rename these
 
 // Returns true if any Factor in `positive_data` can be generated from `parent`
 // false otherwise.
-bool Contains(const vector<Factor>& positive_data,
-	const Factor& parent);
+bool Contains(const vector<pair<Factor, int>>& positive_data,
+	const Factor& parent, int ignore_count = 0);
 
 // Returns true if any Factor in `constraints` generates `child`, false
 // otherwise.

@@ -73,6 +73,10 @@ bool Factor::operator > (const Factor& other) const {
 	return false;
 }
 
+bool Factor::operator == (const Factor& other) const {
+	return (!(*this < other) && !(*this > other));
+}
+
 int Factor::size() const {
 	return bundles.size();
 }

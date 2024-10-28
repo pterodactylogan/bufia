@@ -11,23 +11,23 @@ using ::std::vector;
 using ::std::string;
 using ::std::set;
 
-bool Contains(const vector<Factor>& positive_data,
-	const Factor& parent) {
-	bool found = false;
+bool Contains(const vector<pair<Factor, int>>& positive_data,
+	const Factor& parent, int ignore_count) {
+	int found = 0;
 	#pragma omp parallel shared(found) 
 	{
 		#pragma omp for
 		for(int i=0; i<positive_data.size(); i++){
-			if(parent.generates(positive_data[i])){
+			if(parent.generates(positive_data[i].first)){
 				#pragma omp critical
 				{
-					found = true;
+					found += positive_data[i].second;
 				}
-				#pragma omp cancel for
 			}
 		}
 	}
-	return found;
+	// probably should ultimately return found, and let main handle repurcussions
+	return found > ignore_count;
 }
 
 bool Covers(const vector<Factor>& constraints, const Factor& child, int order) {

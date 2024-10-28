@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 	int MAX_FACTOR_WIDTH = -1;
 	int MAX_FEATURES_PER_BUNDLE = -1;
 	int MAX_DISTANCE = -1;
+	int IGNORE_COUNT = 0;
 	bool DEBUG_MODE = false;
 	// number of new kgrams which must be added by constraint
 	int ABDUCTIVE_PRINCIPLE = 1;
@@ -101,6 +102,7 @@ int main(int argc, char **argv) {
 		pos = arg.find("wb=");
 		if(pos != string::npos) {
 			std::istringstream(arg.substr(pos+3)) >> std::boolalpha >> ADD_WB;
+			continue;
 		}
 
 		pos = arg.find("t=");
@@ -114,6 +116,13 @@ int main(int argc, char **argv) {
 			    symbols.erase(0, pos + 1);
 			}
 			TIER.push_back(symbols);
+			continue;
+		}
+
+		pos = arg.find("ignore=");
+		if(pos != string::npos) {
+			IGNORE_COUNT = std::stoi(arg.substr(pos+7));
+			continue;
 		}
 
 		if(arg.find("debug") != string::npos) {
@@ -160,8 +169,8 @@ int main(int argc, char **argv) {
 		std::cout << "Loaded Alphabet" << std::endl;
 	}
 
-	//  factor width -> vector of factors
-	unordered_map<int, vector<Factor>> positive_data = 
+	//  factor width -> vector of (factor, count) pairs
+	unordered_map<int, vector<pair<Factor, int>>> positive_data = 
 		LoadPositiveData(&data_file, MAX_FACTOR_WIDTH, alphabet, TIER, ORDER, ADD_WB);
 
 	if(DEBUG_MODE) {
@@ -201,7 +210,9 @@ int main(int argc, char **argv) {
 		// if something that matches this factor is in the positive data,
 		// get all child factors and add to queue
 		// otherwise, add to constraints
-		bool contains = Contains(positive_data[queue.front().bundles.size()], queue.front());
+		bool contains = Contains(positive_data[queue.front().bundles.size()], 
+			queue.front(),
+			IGNORE_COUNT);
 
 		if(contains) {
 			to_expand.push_back(queue.front());

@@ -31,6 +31,8 @@ public:
 
 	bool operator > (const Factor& other) const;
 
+	bool operator == (const Factor& other) const;
+
 	int size() const;
 
 	// Returns true if this Factor is a parent of `child`, false otherwise.

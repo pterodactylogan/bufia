@@ -10,6 +10,7 @@
 
 #include "factor.h"
 
+using ::std::multiset;
 using ::std::pair;
 using ::std::string;
 using ::std::set;
@@ -189,13 +190,13 @@ set<Factor> GetSubsequences(const vector<string>& word, int max_width,
 	return result;
 }
 
-unordered_map<int, vector<Factor>> 
+unordered_map<int, vector<pair<Factor, int>>> 
 LoadPositiveData(std::ifstream* data_file, int max_width, 
 	const unordered_map<string, Factor>& alphabet, 
 	const vector<string>& tier, int order,
 	bool add_wb){
 
-	unordered_map<int, set<Factor>> data;
+	unordered_map<int, multiset<Factor>> data;
 
 	if(order == 1 || !tier.empty()) {
 		// Successor or tier projection
@@ -254,9 +255,16 @@ LoadPositiveData(std::ifstream* data_file, int max_width,
 		}
 	}
 
-	unordered_map<int, vector<Factor>> result;
+	unordered_map<int, vector<pair<Factor, int>>> result;
 	for(const auto& symbol : data){
-		result[symbol.first] = vector<Factor>(symbol.second.begin(), symbol.second.end());
+		vector<pair<Factor, int>> facs;
+		auto it = symbol.second.begin();
+		while(it != symbol.second.end()){
+			int count = symbol.second.count(*it);
+			facs.push_back({*it, count});
+			it = symbol.second.upper_bound(*it);
+		}
+		result[symbol.first] = facs;
 	}	
 	return result;
 }
