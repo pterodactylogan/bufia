@@ -27,6 +27,9 @@ for line in lines:
     root = line[:line.find(" @")]
     # deal with vowel allophony changes
     root = root.replace("o", "u").replace("e", "i")
+
+    # if root in a dev or test file in a certain fold,
+    # put it in other 4 train files and that same dev/test file
     if root in locations:
         for i in range(5):
             if locations[root][0] == i:
@@ -34,6 +37,8 @@ for line in lines:
                 files[i][dt].write(line)
             else:
                 files[i][0].write(line)
+    
+    # if no location, sort according to nroots
     else:
         f = nroots%5
         for i in range(5):
@@ -47,8 +52,6 @@ for line in lines:
             else:
                 files[i][0].write(line)
         nroots += 1
-    # if no location, sort according to nroots
-    # increment nroots
 
 for i in range(5):
     for j in range(3):
