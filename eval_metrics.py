@@ -5,9 +5,9 @@ tier = "laryngeal"
 split = "dev"
 fold = "4"
 
-prefix = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/".format(fold)
-illicit_file = prefix + "evals/{0}_eval_illicit_{1}.txt".format(tier, split)
-licit_file = prefix+ "evals/{0}_eval_licit_{1}.txt".format(tier, split)
+prefix = "./data/quechua/Wilson_Gallagher/CrossValidationFolds/{0}/our_version/".format(fold)
+illicit_file = prefix + "evals/{0}_eval_cur_{1}.txt".format(tier, split)
+licit_file = prefix+ "evals/{0}_eval_att_{1}.txt".format(tier, split)
 
 grammar = prefix +"{0}_grammar{1}.txt".format(tier, fold)
 
@@ -70,11 +70,19 @@ total_illicit = len(eval_frame_illicit.index)
 eval_frame_licit.dropna(inplace=True)
 eval_frame_illicit.dropna(inplace=True)
 
-eval_frame_licit["min_d"] = eval_frame_licit.apply(min_d, axis=1)
-eval_frame_licit["min_rank"] = eval_frame_licit.apply(min_rank, axis=1)
+if(len(eval_frame_licit) > 0):
+    eval_frame_licit["min_d"] = eval_frame_licit.apply(min_d, axis=1)
+    eval_frame_licit["min_rank"] = eval_frame_licit.apply(min_rank, axis=1)
+else:
+    eval_frame_licit["min_d"] = []
+    eval_frame_licit["min_rank"] = []
 
-eval_frame_illicit["min_d"] = eval_frame_illicit.apply(min_d, axis=1)
-eval_frame_illicit["min_rank"] = eval_frame_illicit.apply(min_rank, axis=1)
+if(len(eval_frame_illicit) > 0):
+    eval_frame_illicit["min_d"] = eval_frame_illicit.apply(min_d, axis=1)
+    eval_frame_illicit["min_rank"] = eval_frame_illicit.apply(min_rank, axis=1)
+else:
+    eval_frame_illicit["min_d"] = []
+    eval_frame_illicit["min_rank"] = []    
 
 best_f1 = 0
 final_precision = 0
