@@ -1,0 +1,7 @@
+[-cont][+cg]
+[+sg][+wb]
+[+cg][+wb]
+[+sg][+sg]
+[-son][-son][+wb]
+[-son][-cont,+sg][+mb]
+[-cg][+glottal]
