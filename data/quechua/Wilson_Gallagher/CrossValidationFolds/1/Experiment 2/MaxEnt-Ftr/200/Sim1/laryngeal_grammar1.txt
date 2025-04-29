@@ -1,0 +1,7 @@
+[-cont][+cg]
+[+mb][+cg]
+[+sg][+wb]
+[-son,+cg][-cont,+sg]
+[+sg][+sg]
+[-son][-sg][+wb]
+[-cg][+sg][+mb]

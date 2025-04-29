@@ -1,0 +1,8 @@
+[-syllabic][-syllabic]
+[-syllabic,-high][+high]
+[+high][-syllabic,-high]
+[+syllabic][-high,-low][+wb]
+[+wb][-high,-low][+syllabic]
+[+syllabic][-high,-low][+syllabic]
+[+high][-high,-low][+syllabic]
+[+high][-high,-low][+wb]

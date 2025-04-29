@@ -1,0 +1,7 @@
+[+mb][+mb]
+[+high][-high]
+[-high][+high]
+[+wb][+high][+wb]
+[+high][+high][+wb]
+[+wb][-high][+wb]
+[+mb][][-wb]
