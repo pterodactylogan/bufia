@@ -187,7 +187,14 @@ int main(int argc, char **argv) {
 	list<Factor> queue = {start};
 	list<Factor> to_expand;
 
+	// for debug mode only
+	set<vector<string>> banned_ngrams;
+
+	int loops = 0;
 	while(true) {
+		if(DEBUG_MODE && loops%1000 == 0) {
+			std::cout << "q size: " << queue.size() <<std::endl;
+		}
 		if(queue.empty()) {
 			if(to_expand.empty()) break;
 
@@ -217,14 +224,44 @@ int main(int argc, char **argv) {
 		if(contains) {
 			to_expand.push_back(queue.front());
 		} else {
-			constraints.push_back(queue.front());
+			auto constraint = queue.front();
+			if(DEBUG_MODE) {
+				if(ABDUCTIVE_PRINCIPLE > 0){
+					set<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, 
+																																alphabet,
+																																MAX_FACTOR_WIDTH);
+					int new_ngrams = 0;
+					for(const auto& ngram : ngrams){
+						if(banned_ngrams.find(ngram) == banned_ngrams.end()) {
+							++new_ngrams;
+							if(new_ngrams >= ABDUCTIVE_PRINCIPLE) break;
+						}
+					}
+
+					if(new_ngrams >= ABDUCTIVE_PRINCIPLE) {
+						for(const auto& ngram : ngrams) {
+							banned_ngrams.insert(ngram);
+						}
+						std::cout << Display(constraint, feature_order) << std::endl;
+					}
+				}
+				else {
+					std::cout << Display(constraint, feature_order) << std::endl;
+				}
+			}
+			constraints.push_back(constraint);
 		}
 		queue.pop_front();
+
+		if(DEBUG_MODE) ++loops;
 	}
 
+	if(DEBUG_MODE){
+		return 0;
+	}
+
+	// STEP 4: abduction & print constraints
 	if(ABDUCTIVE_PRINCIPLE > 0) {
-	  // remove redundant constraints
-	  set<vector<string>> banned_ngrams;
 		
 		for(Factor const& constraint : constraints){
 			set<vector<string>> ngrams = ComputeGeneratedNGrams(constraint, 
